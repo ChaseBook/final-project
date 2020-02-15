@@ -1,0 +1,14 @@
+---
+title: "ms_2"
+author: Chase Bookin
+date: 02/14/2020
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The first project I looked at was Diego Martinez's project on baseball aging curves from Spring term 2019. Considering I also want to do a baseball project, albeit on a very different topic, it seemed a good starting point to see how others went about working with baseball data. Diego's data collection process most likely was not too challenging in terms of gathering the WAR data for player performance. However, matching that data with player salary data he most likely had to collect in order to compare performance curves to salary curves may have been more challenging. Another definite pro about the project is the abundance of possible visualizations of the data and points he is trying to make. I thought the player aging curve comparison tool was extremely interesting and useful. It was clear, informative, and easy to use. Great project and solid idea for how to format my own baseball project.
+
+The second project I looked at was the First-Year Blocking Group project. This was an interesting idea and similar to Diego's project, they were able to use many visualizations to illustrate takeaways from the data. I remember being emailed a survey during what must have been their data collection process, so I would imagine this project took a significant amount of time to collect and clean the data to then use. I found it interesting how they compared the characteristics of the people who responded to their survey to the larger student body in order to verify the sample could be considered random.
