@@ -57,7 +57,12 @@ if certain teams better at developing hs talent
 this project I will use data to quantify high school players' career outcomes in
 relation to this decision.
 
-download.file("https://www.baseball-reference.com/data/war_daily_bat.txt", dest ="war.csv", mode = "wb")
+
+```{r}
+war <- read_csv("test.csv")
+```
+
+
 
 ```{r, include=FALSE}
 csv <- read_csv("war.csv")
@@ -81,10 +86,24 @@ ggplot(data = ortiz, mapping = aes(age, WAR, color = team_ID)) +
   
 ```
 
-Data: So far, I've loaded in a csv from BaseballReference containing WAR data for all players which essentially measures their production in the major leagues. It will be a good source for analyaing the final question I posed above. My GitHub repo is https://github.com/ChaseBook/final-project.git.
 
 
-I have a handful of ideas for how I will begin to play with the data. For one, I will compare among players that make it to the major leagues, the average production (WAR) of players who turned down the draft out of high school and those who signed immediately by position. In addition, I will look at the average change in draft position for high school players who turn down the draft. Another idea I will examine is the average speed to the majors in terms of years spent in the minor leagues or age. Finally, I will look at how high up organizationally players in each of these two categories are after different numbers of years in the pros or age. I will also look at career earnings for the two categories by position to see if the decision pays off on average strictly from a financial standpoint.
+  Data: So far, I've loaded in a csv from BaseballReference containing WAR data
+for all players which essentially measures their production in the major
+leagues. It will be a good source for analyaing the final question I posed
+above. My GitHub repo is https://github.com/ChaseBook/final-project.git.
+
+  I have a handful of ideas for how I will begin to play with the data. For one, I
+will compare among players that make it to the major leagues, the average
+production (WAR) of players who turned down the draft out of high school and
+those who signed immediately by position. In addition, I will look at the
+average change in draft position for high school players who turn down the
+draft. Another idea I will examine is the average speed to the majors in terms
+of years spent in the minor leagues or age. Finally, I will look at how high up
+organizationally players in each of these two categories are after different
+numbers of years in the pros or age. I will also look at career earnings for the
+two categories by position to see if the decision pays off on average strictly
+from a financial standpoint.
 
 
 
