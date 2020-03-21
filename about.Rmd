@@ -7,29 +7,84 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tidycensus)
+library(ggthemes)
+library(ggplot2)
+library(janitor)
+library(dplyr)
+library(gt)
+library(readxl)
+library(sf)
+library(scales)
+library(magrittr)
+library(haven)
+library(infer)
+library(Lahman)
+library(xml2)
+library(rvest)
 ```
   
-The Major League Baseball draft is an annual event in which the 30 MLB teams take turns selecting top high school and collegiate prospects. Once drafted, a player will choose to sign or, if they are a high school senior or college player with remaining eligibility, not sign and potentially get drafted again down the road.   
+  The Major League Baseball draft is an annual event in which the 30 MLB teams
+take turns selecting top high school and collegiate prospects. Once drafted, a
+player will choose to sign or, if they are a high school senior or college
+player with remaining eligibility, not sign and potentially get drafted again
+down the road.
 
-For top high school players especially, the magnitude of this decision is immense. While certain young players will sign for small contracts, eager to begin their professional career, others will forgo multi-million dollar signing bonuses and attend college. For some, the decision pays off handsomely and the prospect signs for more money as a polished college star. For others, they get injured or fail to perform in college and never play professional baseball.  
+  For top high school players especially, the magnitude of this decision is
+immense. While certain young players will sign for small contracts, eager to
+begin their professional career, others will forgo multi-million dollar signing
+bonuses and attend college. For some, the decision pays off handsomely and the
+prospect signs for more money as a polished college star. For others, they get
+injured or fail to perform in college and never play professional baseball.
+Money is obviously not the only factor in a high school prospect's decision -
+the team, prospect's health, and family influences among other things can play a
+significant role. However, given the amount of money and the opportunity many
+high school players opt to delay, it begs the question of how the decision plays
+out for these athletes.
+  
+Do high school players who sign out of high school have a better chance of
+making it to the Major Leagues relative to their peers who attend college? What
+is the relationship between a player's decision of whether to sign and the
+longevity and production of their professional baseball career? Of drafted high
+school players that make it to the big leagues, do players that choose to attend
+college develop and experience more fruitful careers than players that sign
+immediately out of high school? POSSIBLE RESEARCH proportion of picks on high
+school players for each MLB team and what proportion make it to the bigs to see
+if certain teams better at developing hs talent
+  
+  The Major League Baseball draft is full of fascinating topics to analyze, and in
+this project I will use data to quantify high school players' career outcomes in
+relation to this decision.
 
-Money is obviously not the only factor in a high school prospect's decision - the team, prospect's health, and family influences among other things can play a significant role. However, given the amount of money and the opportunity many high school players opt to delay, it begs the question of how the decision plays out for these athletes.  
-
-Do high school players who sign out of high school have a better chance of making it to the Major Leagues relative to their peers who attend college? What is the relationship between a player's decision of whether to sign and the longevity and production of their professional baseball career? Of drafted high school players that make it to the big leagues, do players that choose to attend college develop and experience more fruitful careers than players that sign immediately out of high school?  
-
-The Major League Baseball draft is full of fascinating topics to analyze, and in this project I will use data to quantify high school players' career outcomes in relation to this decision.
-
-
-
-```{r}
 download.file("https://www.baseball-reference.com/data/war_daily_bat.txt", dest ="war.csv", mode = "wb")
+
+```{r, include=FALSE}
+csv <- read_csv("war.csv")
+ortiz <- csv %>%
+  filter(name_common == "David Ortiz")
+```
+
+
+
+```{r, echo=FALSE}
+
+ggplot(data = ortiz, mapping = aes(age, WAR, color = team_ID)) +
+  geom_point() +
+  theme_classic() + 
+  labs(
+    x = "Age",
+    y = "Wins Above Replacement",
+    title = "David Ortiz Wins Above Replacement by Age",
+    subtitle = "Note his jump in WAR upon joining the Red Sox"
+  )
+  
 ```
 
 Data: So far, I've loaded in a csv from BaseballReference containing WAR data for all players which essentially measures their production in the major leagues. It will be a good source for analyaing the final question I posed above. My GitHub repo is https://github.com/ChaseBook/final-project.git.
 
-With regards to the rest of my data, I found a dataset in section this week with Kaneesha and emailed Preceptor to see if there are any available class funds to purchase it. The data contains data on all draft picks in the MLB draft dating back to 1965. It contains essentially all of the data I need to join to the WAR data to be able to analyze the questions I posed in the description above. Among these variables are player name, whether they signed, whether they were drafted out of high school or college, their age, if they have made it to the major leagues, the level they currently 
 
-Once I access this data, I have a handful of ideas for how I will begin to play with the data. For one, I will compare among players that make it to the major leagues, the average production (WAR) of players who turned down the draft out of high school and those who signed immediately by position. In addition, I will look at the average change in draft position for high school players who turn down the draft. Another idea I will examine is the average speed to the majors in terms of years spent in the minor leagues or age. Finally, I will look at how high up organizationally players in each of these two categories are after different numbers of years in the pros or age. I will also look at career earnings for the two categories by position to see if the decision pays off on average strictly from a financial standpoint.
+I have a handful of ideas for how I will begin to play with the data. For one, I will compare among players that make it to the major leagues, the average production (WAR) of players who turned down the draft out of high school and those who signed immediately by position. In addition, I will look at the average change in draft position for high school players who turn down the draft. Another idea I will examine is the average speed to the majors in terms of years spent in the minor leagues or age. Finally, I will look at how high up organizationally players in each of these two categories are after different numbers of years in the pros or age. I will also look at career earnings for the two categories by position to see if the decision pays off on average strictly from a financial standpoint.
 
 
 
