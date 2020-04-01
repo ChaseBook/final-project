@@ -81,7 +81,7 @@ ggplot(draft_2000_2012, mapping = aes(draft_round, percent_mlb)) +
     y = "Percent to reach Major Leagues",
     title = "Percent of Draft Picks by Round to Reach the Majors",
     subtitle = "Data from 2000-2012 drafts"
-  )
+  ) 
 ```
 
 ```{r, echo=FALSE}
@@ -117,19 +117,22 @@ ggplot(grow_talent, mapping = aes(x = reorder(teamname, -percent_mlb), percent_m
 
 hs_signed <- master %>%
   filter(source == "H" & signed == "Y") %>%
-  mutate(mlb_made = ifelse(high_level == "MLB", 1, 0)) %>%
+  mutate(mlb_made = ifelse(high_level == "MLB", 1, 0)) 
+
+
+hs_signed_90_09 <- hs_signed %>%
   mutate(ignore = 1) %>%
   group_by(draft_round) %>%
   filter(year >= 1990 & year <= 2009) %>%
   filter(draft_round <= 40) %>%
   summarize(percent_mlb = sum(mlb_made) / sum(ignore))
 
-ggplot(hs_signed, mapping = aes(draft_round, percent_mlb)) +
+ggplot(hs_signed_90_09, mapping = aes(draft_round, percent_mlb)) +
   geom_col() +
   theme_economist_white() +
   theme(axis.text.x = element_text(angle = 90)) +
   labs(
-    x = "Team",
+    x = "Round",
     y = "Percent of Signed High School Picks to MLB",
     title = "Percent of Signed High School Picks to MLB by Round",
     subtitle = "Data: 1980-2009 Drafts"
@@ -137,6 +140,13 @@ ggplot(hs_signed, mapping = aes(draft_round, percent_mlb)) +
 
 ```
 
+```{r}
+hs_unsigned <- master %>%
+  arrange(year) %>%
+  group_by(mlbid) %>%
+  mutate(draft_numb = row_number()) %>%
+  filter(first_name == "Brady" & last_name == "Aiken")
+```
 
 
 
