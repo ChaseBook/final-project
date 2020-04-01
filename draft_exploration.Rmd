@@ -43,8 +43,19 @@ war_joined <- war %>%
   summarize(g = sum(G),
             war = sum(as.numeric(WAR)))
 
+```
+
+```{r, include=FALSE}
+
 # joined draft and war data by player mlb ID, then mutated teamname to condense
-# the Angel's team names into a single team
+# the Angel's team names into a single team. I then arranged the data by year,
+# grouped by player_id, and mutated a column called draft_mumber based on the
+# row number (or occurence of that player's id) in the data. I did this because
+# I wanted a column that tells for each draft a player is selected in, that it
+# is the nth time that player has been selected. For example, if a player turns
+# down the draft out of high school, after a year of junior college, and gets
+# drafted after his junior year the draft_numb column should say 1,2,3 for each
+# respective draft.
 
 master <- draft %>%
   left_join(war_joined, by = c("mlbid" = "mlb_ID")) %>%
@@ -52,7 +63,11 @@ master <- draft %>%
                                                         "Anahaim Angels",
                                                         "Los Angeles Angels of Anaheim") ~
                                                           "Los Angeles Angels",
-                                        TRUE ~ teamname)))
+                                        TRUE ~ teamname))) %>%
+  arrange(year) %>%
+  group_by(player_id) %>%
+  mutate(draft_numb = row_number()) %>%
+  ungroup()
 
 # deleting useless columns
 
@@ -60,7 +75,6 @@ master$mlbid_1 <- NULL
 master$x27 <- NULL
 
 ```
-
 
 
 ```{r, echo=FALSE}
@@ -141,13 +155,27 @@ ggplot(hs_signed_90_09, mapping = aes(draft_round, percent_mlb)) +
 ```
 
 ```{r}
-hs_unsigned <- master %>%
-  arrange(year) %>%
-  group_by(mlbid) %>%
-  mutate(draft_numb = row_number()) %>%
-  filter(first_name == "Brady" & last_name == "Aiken")
+
+# I made a new dataset where I filtered the master set for only unsigned
+# highschool picks. I only selected the player_id column. I wanted to do this so
+# that I could have a list of IDs and then rejoin these player IDs using a
+# left_join to keep only the data from players who did not sign out of high
+# school, but all years of their draft data rather than just the draft they
+# turned down out of high school. That is what hs_unsigned_full is.
+
+hs_unsigned_list_ids <- master %>%
+  filter(source == "H" & signed == "N") %>%
+  select(player_id)
+
+hs_unsigned_full <- hs_unsigned_list_ids %>%
+  left_join(master, by = "player_id") %>%
+  arrange(player_id, desc(year))
 ```
 
+```{r}
+hs_unsigned_full %>%
+  filter(first_name == "Grayson" & last_name == "Byrd")
+```
 
 
 
