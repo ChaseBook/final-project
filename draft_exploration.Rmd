@@ -163,19 +163,41 @@ ggplot(hs_signed_90_09, mapping = aes(draft_round, percent_mlb)) +
 # school, but all years of their draft data rather than just the draft they
 # turned down out of high school. That is what hs_unsigned_full is.
 
-hs_unsigned_list_ids <- master %>%
+list_unsigned_id <- master %>%
   filter(source == "H" & signed == "N") %>%
   select(player_id)
 
-hs_unsigned_full <- hs_unsigned_list_ids %>%
+hs_unsigned <- hs_unsigned_list_ids %>%
   left_join(master, by = "player_id") %>%
   arrange(player_id, desc(year))
 ```
 
+
 ```{r}
-hs_unsigned_full %>%
-  filter(first_name == "Grayson" & last_name == "Byrd")
+
+# filtered the data of unsigned high school picks with their subsequent drafts
+# for only the first instance of the player being drafted, which is the draft
+# afte their senior year of high school. For count_redrafted_hs, I filtered for
+# draft_numb equal to 2 to see how many players were redrafted after originally
+# turning the draft down.
+
+count_unsigned_hs <- hs_unsigned_full %>%
+  filter(draft_numb == 1) %>%
+  count() %>%
+  pull(n)
+
+count_redrafted_hs <- hs_unsigned_full %>%
+  filter(draft_numb == 2) %>%
+  count() %>%
+  pull(n)
+
+percent_redrafted_hs <- round(count_redrafted_hs / (count_unsigned_hs), 2)
+
+
+# below, I repeat the same process for high school players drafted in the top 10 and 20 rounds
+
 ```
+
 
 
 
