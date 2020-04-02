@@ -1,0 +1,184 @@
+---
+title: "redraft backup"
+author: "Chase Bookin"
+date: "April 2, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tidycensus)
+library(ggthemes)
+library(ggplot2)
+library(janitor)
+library(dplyr)
+library(gt)
+library(readxl)
+library(sf)
+library(scales)
+library(magrittr)
+library(haven)
+library(infer)
+library(Lahman)
+library(xml2)
+library(rvest)
+library(DataCombine)
+```
+
+
+```{r, include=FALSE}
+war <- read_csv("data/war.csv")
+```
+
+
+```{r, include=FALSE}
+
+draft <- read_csv("data/draft_register.csv") %>%
+  clean_names()
+
+# grouping war data by player and summing career games played and war
+
+war_joined <- war %>%
+  group_by(mlb_ID) %>%
+  summarize(g = sum(G),
+            war = sum(as.numeric(WAR)))
+
+```
+
+```{r, include=FALSE}
+
+# joined draft and war data by player mlb ID, then mutated teamname to condense
+# the Angel's team names into a single team. I then arranged the data by year,
+# grouped by player_id, and mutated a column called draft_mumber based on the
+# row number (or occurence of that player's id) in the data. I did this because
+# I wanted a column that tells for each draft a player is selected in, that it
+# is the nth time that player has been selected. For example, if a player turns
+# down the draft out of high school, after a year of junior college, and gets
+# drafted after his junior year the draft_numb column should say 1,2,3 for each
+# respective draft.
+
+master <- draft %>%
+  left_join(war_joined, by = c("mlbid" = "mlb_ID")) %>%
+  mutate(teamname = as.factor(case_when(teamname %in% c("California Angels",
+                                                        "Anahaim Angels",
+                                                        "Los Angeles Angels of Anaheim") ~
+                                                          "Los Angeles Angels",
+                                        TRUE ~ teamname))) %>%
+  arrange(year) %>%
+  group_by(player_id) %>%
+  mutate(draft_numb = row_number()) %>%
+  ungroup()
+
+# deleting useless columns
+
+master$mlbid_1 <- NULL
+master$x27 <- NULL
+
+```
+
+```{r}
+
+# I made a new dataset where I filtered the master set for only unsigned
+# highschool picks. I only selected the player_id column. I wanted to do this so
+# that I could have a list of IDs and then rejoin these player IDs using a
+# left_join to keep only the data from players who did not sign out of high
+# school, but all years of their draft data rather than just the draft they
+# turned down out of high school. That is what hs_unsigned is.
+
+unsigned_ids <- master %>%
+  filter(source == "H" & signed == "N") %>%
+  select(player_id)
+
+hs_unsigned <- unsigned_ids %>%
+  left_join(master, by = "player_id") %>%
+  arrange(player_id, desc(year))
+```
+
+
+```{r}
+
+# filtering the unsigned high school data for only draft picks after 1990
+
+hs_unsigned_trimyear <- hs_unsigned %>%
+  filter(year >= 1990)
+
+# filtered the data of unsigned high school picks with their subsequent drafts
+# for only the first instance of the player being drafted, which is the draft
+# afte their senior year of high school. For count_redrafted_hs, I filtered for
+# draft_numb equal to 2 to see how many players were redrafted after originally
+# turning the draft down.
+
+count_unsigned_hs <- hs_unsigned_trimyear %>%
+  filter(draft_numb == 1 & year <= 2015) %>%
+  count() %>%
+  pull(n)
+
+# I create the ID table and re join it in order to get rid of data for redrafted
+# players whose first draft out of high school was before the trim year (1990).
+
+trimyear_ids <- hs_unsigned_trimyear %>%
+  filter(draft_numb == 1 & year <= 2015) %>%
+  select(player_id)
+
+count_redrafted_hs <- trimyear_ids %>%
+  left_join(hs_unsigned_trimyear, by = "player_id") %>%
+  filter(draft_numb == 2) %>%
+  count() %>%
+  pull(n)
+
+percent_redrafted_hs <- round(count_redrafted_hs / count_unsigned_hs * 100, 1)
+
+
+# below, I repeat the same process for high school players drafted in the top 20
+# rounds. I started by filtering the unsigned high school full dataset for only
+# the initial high school draft and only those high school players taken in the
+# first 20 rounds. I also filtered out players who were drafted out of high
+# school after 2015, as it is still possible they are playing in college and may
+# be redrafted later. I then re-joined the data to their subsequent drafts and
+# found the percent of top 20 round high schoolers who are drafted again. AGAIN,
+# only using data from players hwo were initially taken between 1990 and 2015.
+
+# I filtered year less than 2015 to make sure we are selecting only top 20 round
+# high school picks who turned down the draft between 1990 and 2015. Their
+# subsequent drafts can occur any other year.
+
+unsigned_hs_20_ids <- hs_unsigned_trimyear %>%
+  filter(draft_numb == 1 & draft_round <= 20 & year <= 2015) %>%
+  select(player_id)
+
+hs_unsigned_20 <- unsigned_hs_20_ids %>%
+  left_join(hs_unsigned_trimyear, by = "player_id")
+
+
+first_draft_unsigned_20 <- hs_unsigned_20 %>%
+  filter(draft_numb == 1)
+
+avg_round_20_hs <- first_draft_unsigned_20 %>%
+  summarize(mean_round = round(mean(draft_round), 2))%>%
+  pull(mean_round)
+
+count_unsigned_20 <- first_draft_unsigned_20 %>%
+  count() %>%
+  pull(n)
+
+redrafted_20 <- hs_unsigned_20 %>%
+  filter(draft_numb == 2)
+  
+avg_round_redrafted_20 <- redrafted_20 %>%
+  summarize(mean_round = round(mean(draft_round),2)) %>%
+  pull(mean_round)
+
+count_redrafted_20 <- redrafted_20 %>%
+  count() %>%
+  pull(n)
+
+percent_redrafted_20 <- round(count_redrafted_20 / count_unsigned_20 * 100, 1)
+
+```
+Findings from master redraft function (can be found in redraft_backup.Rmd) :
+50.8 percent of players that turned down the draft out of high school from
+1990-2015 were drafted again. 73.3 percent of players that turned down a top 20
+round draft pick out of high school from 1990-2015 were drafted again. The
+average initial round of top 20 high school picks to turn down the draft was
+12.99. When they are redrafted, the average pick is round 16.38, a fair drop.

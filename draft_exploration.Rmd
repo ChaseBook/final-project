@@ -173,12 +173,21 @@ hs_unsigned <- unsigned_ids %>%
 ```
 
 
+Findings from master redraft function (can be found in redraft_backup.Rmd) :
+50.8 percent of players that turned down the draft out of high school from
+1990-2015 were drafted again. 73.3 percent of players that turned down a top 20
+round draft pick out of high school from 1990-2015 were drafted again. The
+average initial round of top 20 high school picks to turn down the draft was
+12.99. When they are redrafted, the average pick is round 16.38, a fair drop.
+
+
 ```{r}
 
+redraft_master <- function(startyear, endyear = startyear + 4) {
 # filtering the unsigned high school data for only draft picks after 1990
 
 hs_unsigned_trimyear <- hs_unsigned %>%
-  filter(year >= 1990)
+  filter(year >= startyear)
 
 # filtered the data of unsigned high school picks with their subsequent drafts
 # for only the first instance of the player being drafted, which is the draft
@@ -187,7 +196,7 @@ hs_unsigned_trimyear <- hs_unsigned %>%
 # turning the draft down.
 
 count_unsigned_hs <- hs_unsigned_trimyear %>%
-  filter(draft_numb == 1 & year <= 2015) %>%
+  filter(draft_numb == 1 & year <= endyear) %>%
   count() %>%
   pull(n)
 
@@ -195,7 +204,7 @@ count_unsigned_hs <- hs_unsigned_trimyear %>%
 # players whose first draft out of high school was before the trim year (1990).
 
 trimyear_ids <- hs_unsigned_trimyear %>%
-  filter(draft_numb == 1 & year <= 2015) %>%
+  filter(draft_numb == 1 & year <= endyear) %>%
   select(player_id)
 
 count_redrafted_hs <- trimyear_ids %>%
@@ -221,7 +230,7 @@ percent_redrafted_hs <- round(count_redrafted_hs / count_unsigned_hs * 100, 1)
 # subsequent drafts can occur any other year.
 
 unsigned_hs_20_ids <- hs_unsigned_trimyear %>%
-  filter(draft_numb == 1 & draft_round <= 20 & year <= 2015) %>%
+  filter(draft_numb == 1 & draft_round <= 20 & year <= endyear) %>%
   select(player_id)
 
 hs_unsigned_20 <- unsigned_hs_20_ids %>%
@@ -252,22 +261,137 @@ count_redrafted_20 <- redrafted_20 %>%
 
 percent_redrafted_20 <- round(count_redrafted_20 / count_unsigned_20 * 100, 1)
 
+percent_redrafted_20
+}
+
 ```
-Findings from above: 50.8 percent of players that turned down the draft out of
-high school from 1990-2015 were drafted again. 73.3 percent of players that turned down a top 20
-round draft pick out of high school from 1990-2015 were drafted again. The average initial round
-of top 20 high school picks to turn down the draft was 12.99. When they are
-redrafted, the average pick is round 16.38, a fair drop.
 
 
 ```{r}
 
+full_redraft_percent <- function(startyear, endyear = startyear + 4) {
+
+
+hs_unsigned_trimyear <- hs_unsigned %>%
+  filter(year >= startyear)
+
+count_unsigned_hs <- hs_unsigned_trimyear %>%
+  filter(draft_numb == 1 & year <= endyear) %>%
+  count() %>%
+  pull(n)
+
+trimyear_ids <- hs_unsigned_trimyear %>%
+  filter(draft_numb == 1 & year <= endyear) %>%
+  select(player_id)
+
+count_redrafted_hs <- trimyear_ids %>%
+  left_join(hs_unsigned_trimyear, by = "player_id") %>%
+  filter(draft_numb == 2) %>%
+  count() %>%
+  pull(n)
+
+percent_redrafted_hs <- round(count_redrafted_hs / count_unsigned_hs * 100, 1)
+
+percent_redrafted_hs
+
+}
+
+full_redraft_percent(1990, 2015)
+
+```
+
+```{r}
+round_redraft_percent <- function(startyear, endyear = startyear + 4, rounds = 20) {
+  
+hs_unsigned_trimyear <- hs_unsigned %>%
+  filter(year >= startyear)
+
+unsigned_hs_20_ids <- hs_unsigned_trimyear %>%
+  filter(draft_numb == 1 & draft_round <= rounds & year <= endyear) %>%
+  select(player_id)
+
+hs_unsigned_20 <- unsigned_hs_20_ids %>%
+  left_join(hs_unsigned_trimyear, by = "player_id")
+
+first_draft_unsigned_20 <- hs_unsigned_20 %>%
+  filter(draft_numb == 1)
+
+count_unsigned_20 <- first_draft_unsigned_20 %>%
+  count() %>%
+  pull(n)
+
+redrafted_20 <- hs_unsigned_20 %>%
+  filter(draft_numb == 2)
+
+count_redrafted_20 <- redrafted_20 %>%
+  count() %>%
+  pull(n)
+
+percent_redrafted_20 <- round(count_redrafted_20 / count_unsigned_20 * 100, 1)
+
+percent_redrafted_20
+
+}
+
+round_redraft_percent(1990, 2015, 20)
+
 ```
 
 
+```{r}
+prior_mean_round <- function(startyear, endyear = startyear + 4, rounds = 20) {
+  
+hs_unsigned_trimyear <- hs_unsigned %>%
+  filter(year >= startyear)
 
+unsigned_hs_20_ids <- hs_unsigned_trimyear %>%
+  filter(draft_numb == 1 & draft_round <= rounds & year <= endyear) %>%
+  select(player_id)
 
+hs_unsigned_20 <- unsigned_hs_20_ids %>%
+  left_join(hs_unsigned_trimyear, by = "player_id")
 
+first_draft_unsigned_20 <- hs_unsigned_20 %>%
+  filter(draft_numb == 1)
+
+avg_round_20_hs <- first_draft_unsigned_20 %>%
+  summarize(mean_round = round(mean(draft_round), 2))%>%
+  pull(mean_round)
+
+avg_round_20_hs
+
+}
+
+prior_mean_round(1990, 2015, 20)
+```
+
+```{r}
+post_mean_round <- function(startyear, endyear = startyear + 4, rounds = 20) {
+  
+hs_unsigned_trimyear <- hs_unsigned %>%
+  filter(year >= startyear)
+
+unsigned_hs_20_ids <- hs_unsigned_trimyear %>%
+  filter(draft_numb == 1 & draft_round <= rounds & year <= endyear) %>%
+  select(player_id)
+
+hs_unsigned_20 <- unsigned_hs_20_ids %>%
+  left_join(hs_unsigned_trimyear, by = "player_id")
+
+redrafted_20 <- hs_unsigned_20 %>%
+  filter(draft_numb == 2)
+  
+avg_round_redrafted_20 <- redrafted_20 %>%
+  summarize(mean_round = round(mean(draft_round),2)) %>%
+  pull(mean_round)
+
+avg_round_redrafted_20
+  
+}
+
+post_mean_round(1990, 2015, 20)
+
+```
 
 
 
