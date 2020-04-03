@@ -305,13 +305,14 @@ full_redraft_percent(1990, 2015)
 ```
 
 ```{r}
-round_redraft_percent <- function(startyear, endyear = startyear + 4, rounds = 20) {
+round_redraft_percent <- function(startyear, endyear = startyear + 4, max_round = 20, min_round = 1) {
   
 hs_unsigned_trimyear <- hs_unsigned %>%
   filter(year >= startyear)
 
 unsigned_hs_20_ids <- hs_unsigned_trimyear %>%
-  filter(draft_numb == 1 & draft_round <= rounds & year <= endyear) %>%
+  filter(draft_numb == 1 & draft_round <= max_round &
+           draft_round >= min_round & year <= endyear) %>%
   select(player_id)
 
 hs_unsigned_20 <- unsigned_hs_20_ids %>%
@@ -343,13 +344,14 @@ round_redraft_percent(2005, 2009, 5)
 
 
 ```{r}
-prior_mean_round <- function(startyear, endyear = startyear + 4, rounds = 20) {
+prior_mean_round <- function(startyear, endyear = startyear + 4, max_round = 20, min_round = 1) {
   
 hs_unsigned_trimyear <- hs_unsigned %>%
   filter(year >= startyear)
 
 unsigned_hs_20_ids <- hs_unsigned_trimyear %>%
-  filter(draft_numb == 1 & draft_round <= rounds & year <= endyear) %>%
+  filter(draft_numb == 1 & draft_round <= max_round &
+           draft_round >= min_round & year <= endyear) %>%
   select(player_id)
 
 hs_unsigned_20 <- unsigned_hs_20_ids %>%
@@ -370,13 +372,14 @@ prior_mean_round(1990, 2015, 20)
 ```
 
 ```{r}
-post_mean_round <- function(startyear, endyear = startyear + 4, rounds = 20) {
+post_mean_round <- function(startyear, endyear = startyear + 4, max_round = 20, min_round = 1) {
   
 hs_unsigned_trimyear <- hs_unsigned %>%
   filter(year >= startyear)
 
 unsigned_hs_20_ids <- hs_unsigned_trimyear %>%
-  filter(draft_numb == 1 & draft_round <= rounds & year <= endyear) %>%
+  filter(draft_numb == 1 & draft_round <= max_round &
+           draft_round >= min_round & year <= endyear) %>%
   select(player_id)
 
 hs_unsigned_20 <- unsigned_hs_20_ids %>%
@@ -417,7 +420,9 @@ post_mean_round(1990, 2015, 20)
 # players in the period to turn down the draft, percent redrafted of high school
 # players drafted before the round cutoff out of high school in the period,
 # initial mean draft round, next mean draft round, and difference between the
-# two slots.
+# two slots. 
+
+# NOTE: I added a min_round / max_round input so that the round data does not overlap. For example, if I have top 5 round data and top 10 round data for a given 5 year period, I want to separate rounds 1-5 from rounds 6-10
 
 half_decade <- c(1990, 1995, 2000, 2005, 2010)
 half_decade <- set_names(half_decade, nm = half_decade)
@@ -426,15 +431,18 @@ redraft_table_20 <- tibble(start_year = c(1990, 1995, 2000, 2005, 2010)) %>%
   mutate(round = 20) %>%
   mutate(percent_redrafted = map_dbl(half_decade, ~round_redraft_percent(
     startyear = .,
-    rounds = 20), 
+    max_round = 20,
+    min_round = 11), 
     .id = half_decade)) %>%
   mutate(initial_draft_round = map_dbl(half_decade, ~prior_mean_round(
     startyear = .,
-    rounds = 20),
+    max_round = 20,
+    min_round = 11),
     .id = half_decade)) %>%
   mutate(redraft_round = map_dbl(half_decade, ~post_mean_round(
     startyear = .,
-    rounds = 20),
+    max_round = 20,
+    min_round = 11),
     .id = half_decade)) %>%
   mutate(mean_round_diff = initial_draft_round - redraft_round)
   
@@ -443,15 +451,18 @@ redraft_table_10 <- tibble(start_year = c(1990, 1995, 2000, 2005, 2010)) %>%
   mutate(round = 10) %>%
   mutate(percent_redrafted = map_dbl(half_decade, ~round_redraft_percent(
     startyear = .,
-    rounds = 10), 
+    max_round = 10,
+    min_round = 6), 
     .id = half_decade)) %>%
   mutate(initial_draft_round = map_dbl(half_decade, ~prior_mean_round(
     startyear = .,
-    rounds = 10),
+    max_round = 10,
+    min_round = 6),
     .id = half_decade)) %>%
   mutate(redraft_round = map_dbl(half_decade, ~post_mean_round(
     startyear = .,
-    rounds = 10),
+    max_round = 10,
+    min_round = 6),
     .id = half_decade)) %>%
   mutate(mean_round_diff = initial_draft_round - redraft_round)
 
@@ -459,15 +470,15 @@ redraft_table_05 <- tibble(start_year = c(1990, 1995, 2000, 2005, 2010)) %>%
   mutate(round = 5) %>%
   mutate(percent_redrafted = map_dbl(half_decade, ~round_redraft_percent(
     startyear = .,
-    rounds = 5), 
+    max_round = 5), 
     .id = half_decade)) %>%
   mutate(initial_draft_round = map_dbl(half_decade, ~prior_mean_round(
     startyear = .,
-    rounds = 5),
+    max_round = 5),
     .id = half_decade)) %>%
   mutate(redraft_round = map_dbl(half_decade, ~post_mean_round(
     startyear = .,
-    rounds = 5),
+    max_round = 5),
     .id = half_decade)) %>%
   mutate(mean_round_diff = initial_draft_round - redraft_round)
 
@@ -475,15 +486,18 @@ redraft_table_50 <- tibble(start_year = c(1990, 1995, 2000, 2005, 2010)) %>%
   mutate(round = 50) %>%
   mutate(percent_redrafted = map_dbl(half_decade, ~round_redraft_percent(
     startyear = .,
-    rounds = 50), 
+    max_round = 50,
+    min_round = 21), 
     .id = half_decade)) %>%
   mutate(initial_draft_round = map_dbl(half_decade, ~prior_mean_round(
     startyear = .,
-    rounds = 50),
+    max_round = 50,
+    min_round = 21),
     .id = half_decade)) %>%
   mutate(redraft_round = map_dbl(half_decade, ~post_mean_round(
     startyear = .,
-    rounds = 50),
+    max_round = 50,
+    min_round = 21),
     .id = half_decade)) %>%
   mutate(mean_round_diff = initial_draft_round - redraft_round)
 
