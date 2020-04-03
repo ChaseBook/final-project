@@ -610,8 +610,9 @@ redraft_table %>%
 ```
 
 
+shiny link:
 
-
+https://chase-bookin.shinyapps.io/final_project_shiny/
 
 
 
