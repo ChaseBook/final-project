@@ -154,7 +154,7 @@ ggplot(hs_signed_90_09, mapping = aes(draft_round, percent_mlb)) +
 
 ```
 
-```{r}
+```{r, include=FALSE}
 
 # I made a new dataset where I filtered the master set for only unsigned
 # highschool picks. I only selected the player_id column. I wanted to do this so
@@ -185,7 +185,7 @@ average initial round of top 20 high school picks to turn down the draft was
 12.99. When they are redrafted, the average pick is round 16.38, a fair drop.
 
 
-```{r}
+```{r, include=FALSE}
 
 redraft_master <- function(startyear, endyear = startyear + 4) {
 # filtering the unsigned high school data for only draft picks after 1990
@@ -271,7 +271,7 @@ percent_redrafted_20
 ```
 
 
-```{r}
+```{r, include=FALSE}
 
 full_redraft_percent <- function(startyear, endyear = startyear + 4) {
 
@@ -304,7 +304,7 @@ full_redraft_percent(1990, 2015)
 
 ```
 
-```{r}
+```{r, include=FALSE}
 round_redraft_percent <- function(startyear, endyear = startyear + 4, max_round = 20, min_round = 1) {
   
 hs_unsigned_trimyear <- hs_unsigned %>%
@@ -342,7 +342,7 @@ round_redraft_percent(2000, 2004, 5)
 
 ```
 
-```{r}
+```{r, include=FALSE}
 prior_mean_round <- function(startyear, endyear = startyear + 4, max_round = 20, min_round = 1) {
   
 hs_unsigned_trimyear <- hs_unsigned %>%
@@ -370,7 +370,7 @@ avg_round_20_hs
 prior_mean_round(1990, 2015, 20)
 ```
 
-```{r}
+```{r, include=FALSE}
 post_mean_round <- function(startyear, endyear = startyear + 4, max_round = 20, min_round = 1) {
   
 hs_unsigned_trimyear <- hs_unsigned %>%
@@ -400,7 +400,7 @@ post_mean_round(1990, 2015, 20)
 ```
 
 
-```{r}
+```{r, include=FALSE}
 
 # I made the master redraft_table in this chunk. Started by making a half-decade
 # list from 1990 through 20010 which each serve to hold the data for that draft
@@ -564,7 +564,7 @@ redraft_table <- rbind(redraft_table_50,
 
 
 
-```{r}
+```{r, echo=FALSE}
 
 # ggplot of redraft probability by set of rounds drafted in out of high school
 # and 5 year period in which a player was drafted out of high school.
@@ -582,9 +582,16 @@ redraft_table %>%
   ) +
   scale_color_viridis_c() +
   scale_x_continuous(breaks = c(5, 10, 20, 30, 40, 50))
+
 ```
 
-```{r}
+```{r, include=FALSE}
+ggsave("final_project_shiny/redraft_probability.png")
+```
+
+
+
+```{r, echo=FALSE}
 redraft_table %>%
   ggplot(aes(round, mean_round_diff)) +
   geom_point(na.rm = TRUE) +
