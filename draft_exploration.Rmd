@@ -163,8 +163,12 @@ ggplot(hs_signed_90_09, mapping = aes(draft_round, percent_mlb)) +
 # school, but all years of their draft data rather than just the draft they
 # turned down out of high school. That is what hs_unsigned is.
 
+# NOTE: I added the draft_numb == 1 to the filter because some players (Matt
+# Harrington) were drafted out of high school technically and turned down the
+# draft multiple times.
+
 unsigned_ids <- master %>%
-  filter(source == "H" & signed == "N") %>%
+  filter(source == "H" & signed == "N" & draft_numb == 1) %>%
   select(player_id)
 
 hs_unsigned <- unsigned_ids %>%
@@ -172,10 +176,6 @@ hs_unsigned <- unsigned_ids %>%
   arrange(player_id, desc(year))
 ```
 
-
-```{r}
-
-```
 
 Findings from master redraft function (can be found in redraft_backup.Rmd) :
 50.8 percent of players that turned down the draft out of high school from
@@ -338,10 +338,9 @@ percent_redrafted_20
 
 }
 
-round_redraft_percent(2005, 2009, 5)
+round_redraft_percent(2000, 2004, 5)
 
 ```
-
 
 ```{r}
 prior_mean_round <- function(startyear, endyear = startyear + 4, max_round = 20, min_round = 1) {
@@ -482,26 +481,81 @@ redraft_table_05 <- tibble(start_year = c(1990, 1995, 2000, 2005, 2010)) %>%
     .id = half_decade)) %>%
   mutate(mean_round_diff = initial_draft_round - redraft_round)
 
+
+# I added the ifelse for rounds 40-50 for the average round columns because it
+# is possible a player was redrafted after the new Collective Bargaining
+# Agreement that cut the draft to 40 rounds. This would make it appear as though
+# their jump in draft stock was higher than in reality because there were only
+# 40 rounds to be selected from to begin with, implying an automatic draft stock
+# boost if redrafted. I only used an ifelse to set 2010 data to NA for percent
+# redrafted because we only have one year of data from 2011 in this category.
+
 redraft_table_50 <- tibble(start_year = c(1990, 1995, 2000, 2005, 2010)) %>%
   mutate(round = 50) %>%
-  mutate(percent_redrafted = map_dbl(half_decade, ~round_redraft_percent(
+  mutate(percent_redrafted = ifelse(start_year == 2010, NA,
+                                    map_dbl(half_decade, ~round_redraft_percent(
     startyear = .,
     max_round = 50,
+    min_round = 41), 
+    .id = half_decade))) %>%
+  mutate(initial_draft_round = ifelse(start_year == 2010 | start_year == 2005, NA,
+                                      map_dbl(half_decade, ~prior_mean_round(
+    startyear = .,
+    max_round = 50,
+    min_round = 41),
+    .id = half_decade))) %>%
+  mutate(redraft_round = ifelse(start_year == 2010 | start_year == 2005, NA,
+                                map_dbl(half_decade, ~post_mean_round(
+    startyear = .,
+    max_round = 50,
+    min_round = 41),
+    .id = half_decade))) %>%
+  mutate(mean_round_diff = initial_draft_round - redraft_round)
+
+redraft_table_30 <- tibble(start_year = c(1990, 1995, 2000, 2005, 2010)) %>%
+  mutate(round = 30) %>%
+  mutate(percent_redrafted = map_dbl(half_decade, ~round_redraft_percent(
+    startyear = .,
+    max_round = 30,
     min_round = 21), 
     .id = half_decade)) %>%
   mutate(initial_draft_round = map_dbl(half_decade, ~prior_mean_round(
     startyear = .,
-    max_round = 50,
+    max_round = 30,
     min_round = 21),
     .id = half_decade)) %>%
   mutate(redraft_round = map_dbl(half_decade, ~post_mean_round(
     startyear = .,
-    max_round = 50,
+    max_round = 30,
     min_round = 21),
     .id = half_decade)) %>%
   mutate(mean_round_diff = initial_draft_round - redraft_round)
 
-redraft_table <- rbind(redraft_table_50, redraft_table_20, redraft_table_10, redraft_table_05)
+redraft_table_40 <- tibble(start_year = c(1990, 1995, 2000, 2005, 2010)) %>%
+  mutate(round = 40) %>%
+  mutate(percent_redrafted = map_dbl(half_decade, ~round_redraft_percent(
+    startyear = .,
+    max_round = 40,
+    min_round = 31), 
+    .id = half_decade)) %>%
+  mutate(initial_draft_round = map_dbl(half_decade, ~prior_mean_round(
+    startyear = .,
+    max_round = 40,
+    min_round = 31),
+    .id = half_decade)) %>%
+  mutate(redraft_round = map_dbl(half_decade, ~post_mean_round(
+    startyear = .,
+    max_round = 40,
+    min_round = 31),
+    .id = half_decade)) %>%
+  mutate(mean_round_diff = initial_draft_round - redraft_round)
+
+redraft_table <- rbind(redraft_table_50,
+                       redraft_table_40,
+                       redraft_table_30,
+                       redraft_table_20, 
+                       redraft_table_10, 
+                       redraft_table_05)
 
 # order table by round descending and start year ascending to return to standard
 
@@ -510,7 +564,43 @@ redraft_table <- rbind(redraft_table_50, redraft_table_20, redraft_table_10, red
 
 
 
+```{r}
 
+# ggplot of redraft probability by set of rounds drafted in out of high school
+# and 5 year period in which a player was drafted out of high school.
+
+redraft_table %>%
+  ggplot(aes(round, percent_redrafted)) +
+  geom_point(na.rm = TRUE) +
+  geom_line(aes(group = start_year, color = start_year), na.rm = TRUE) +
+  labs(
+    x = "Round Range Drafted out of High School",
+    y = "Percent of Picks Re-drafted",
+    color = "Time Frame",
+    title = "High School Re-draft Probability",
+    subtitle = "Organized by initial round range and time period"
+  ) +
+  scale_color_viridis_c() +
+  scale_x_continuous(breaks = c(5, 10, 20, 30, 40, 50))
+```
+
+```{r}
+redraft_table %>%
+  ggplot(aes(round, mean_round_diff)) +
+  geom_point(na.rm = TRUE) +
+  geom_line(aes(group = start_year, color = start_year), na.rm = TRUE) +
+  labs(
+    x = "Round Range Drafted out of High School",
+    y = "Average Improvement Re-draft Round",
+    color = "Time Frame",
+    title = "Average Change in Round of Re-drafted Unsigned High School Picks",
+    subtitle = "Organized by initial round range and time period"
+  ) +
+  scale_color_viridis_c() +
+  scale_x_continuous(breaks = c(5, 10, 20, 30, 40, 50)) +
+  scale_y_continuous(breaks = c(-10, -5, 0, 10, 20)) +
+  geom_hline(color = "red", linetype = "dashed", yintercept = 0)
+```
 
 
 
