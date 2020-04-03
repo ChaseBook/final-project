@@ -173,6 +173,10 @@ hs_unsigned <- unsigned_ids %>%
 ```
 
 
+```{r}
+
+```
+
 Findings from master redraft function (can be found in redraft_backup.Rmd) :
 50.8 percent of players that turned down the draft out of high school from
 1990-2015 were drafted again. 73.3 percent of players that turned down a top 20
@@ -333,7 +337,7 @@ percent_redrafted_20
 
 }
 
-round_redraft_percent(1990, 2015, 20)
+round_redraft_percent(2005, 2009, 5)
 
 ```
 
@@ -393,6 +397,95 @@ post_mean_round(1990, 2015, 20)
 
 ```
 
+
+```{r}
+
+# I made the master redraft_table in this chunk. Started by making a half-decade
+# list from 1990 through 20010 which each serve to hold the data for that draft
+# and the four following it. I made a tibble starting with these years and added
+# a round column. Next, I added a percent redrafted percent column for all
+# players who were drafted out of high school and turned it down in that time
+# period. I then added a percent redrafted column for players drafted within the
+# top 20 rounds of high school within that time period who turned down the draft
+# to see the proportion that were redrafted. Finally, I took the same players'
+# average initial draft round out of high school, their average draft round the
+# next time they were picked, and the difference between them to see how their
+# stock changed. I repeated the process for top 10 round high school picks and
+# top 5 round high school picks, and then binded the three tables into a single
+# table, redraft_table. The table stores the draft year period (2010-2014), high
+# school draft round maximum (20th round), percent redrafted of all high school
+# players in the period to turn down the draft, percent redrafted of high school
+# players drafted before the round cutoff out of high school in the period,
+# initial mean draft round, next mean draft round, and difference between the
+# two slots.
+
+half_decade <- c(1990, 1995, 2000, 2005, 2010)
+half_decade <- set_names(half_decade, nm = half_decade)
+
+redraft_table_20 <- tibble(start_year = c(1990, 1995, 2000, 2005, 2010)) %>%
+  mutate(round = 20) %>%
+  mutate(percent_redrafted_all = map_dbl(half_decade, ~full_redraft_percent(
+    startyear = .), 
+    .id = half_decade)) %>%
+  mutate(percent_redrafted = map_dbl(half_decade, ~round_redraft_percent(
+    startyear = .,
+    rounds = 20), 
+    .id = half_decade)) %>%
+  mutate(initial_draft_round = map_dbl(half_decade, ~prior_mean_round(
+    startyear = .,
+    rounds = 20),
+    .id = half_decade)) %>%
+  mutate(redraft_round = map_dbl(half_decade, ~post_mean_round(
+    startyear = .,
+    rounds = 20),
+    .id = half_decade)) %>%
+  mutate(mean_round_diff = initial_draft_round - redraft_round)
+  
+  
+redraft_table_10 <- tibble(start_year = c(1990, 1995, 2000, 2005, 2010)) %>%
+  mutate(round = 10) %>%
+  mutate(percent_redrafted_all = map_dbl(half_decade, ~full_redraft_percent(
+    startyear = .), 
+    .id = half_decade)) %>%
+  mutate(percent_redrafted = map_dbl(half_decade, ~round_redraft_percent(
+    startyear = .,
+    rounds = 10), 
+    .id = half_decade)) %>%
+  mutate(initial_draft_round = map_dbl(half_decade, ~prior_mean_round(
+    startyear = .,
+    rounds = 10),
+    .id = half_decade)) %>%
+  mutate(redraft_round = map_dbl(half_decade, ~post_mean_round(
+    startyear = .,
+    rounds = 10),
+    .id = half_decade)) %>%
+  mutate(mean_round_diff = initial_draft_round - redraft_round)
+
+redraft_table_05 <- tibble(start_year = c(1990, 1995, 2000, 2005, 2010)) %>%
+  mutate(round = 5) %>%
+  mutate(percent_redrafted_all = map_dbl(half_decade, ~full_redraft_percent(
+    startyear = .), 
+    .id = half_decade)) %>%
+  mutate(percent_redrafted = map_dbl(half_decade, ~round_redraft_percent(
+    startyear = .,
+    rounds = 5), 
+    .id = half_decade)) %>%
+  mutate(initial_draft_round = map_dbl(half_decade, ~prior_mean_round(
+    startyear = .,
+    rounds = 5),
+    .id = half_decade)) %>%
+  mutate(redraft_round = map_dbl(half_decade, ~post_mean_round(
+    startyear = .,
+    rounds = 5),
+    .id = half_decade)) %>%
+  mutate(mean_round_diff = initial_draft_round - redraft_round)
+
+redraft_table <- rbind(redraft_table_20, redraft_table_10, redraft_table_05)
+
+# order table by round descending and start year ascending to return to standard
+
+
+```
 
 
 
