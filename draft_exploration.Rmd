@@ -580,6 +580,7 @@ redraft_table %>%
     title = "High School Re-draft Probability",
     subtitle = "Organized by initial round range and time period"
   ) +
+  theme_light() +
   scale_color_viridis_c() +
   scale_x_continuous(breaks = c(5, 10, 20, 30, 40, 50))
 
@@ -603,6 +604,7 @@ redraft_table %>%
     title = "Average Change in Round of Re-drafted Unsigned High School Picks",
     subtitle = "Organized by initial round range and time period"
   ) +
+  theme_light() +
   scale_color_viridis_c() +
   scale_x_continuous(breaks = c(5, 10, 20, 30, 40, 50)) +
   scale_y_continuous(breaks = c(-10, -5, 0, 10, 20)) +
