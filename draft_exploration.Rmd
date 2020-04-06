@@ -585,6 +585,7 @@ redraft_table %>%
   scale_x_continuous(breaks = c(5, 10, 20, 30, 40, 50))
 
 ```
+Notes on graph: most recent 5 years emulates earliest two 5 year periods but much less steep towards back end of draft. Possible explanations are teams taking late draft shots at unsignable top picks or high school picks just maintaining stock better.
 
 ```{r, include=FALSE}
 ggsave("final_project_shiny/redraft_probability.png")
@@ -610,11 +611,64 @@ redraft_table %>%
   scale_y_continuous(breaks = c(-10, -5, 0, 10, 20)) +
   geom_hline(color = "red", linetype = "dashed", yintercept = 0)
 ```
-
+Note estimated intercept with y=0 to see when on average it becomes beneficial
+to a player's redraft stock to not sign out of high school. Important to keep in
+mind this is for players who are redrafted, so back half of draft improvement
+likely partly explained by fewer, the best, initial late round high school picks
+being redrafted.
 
 shiny link:
 
 https://chase-bookin.shinyapps.io/final_project_shiny/
+
+
+```{r, echo=FALSE}
+
+mlb_percentile_signed <- function(round = 20, startyear = 1990, endyear = 2010) {
+  
+top_20_signed_total <- master %>%
+  filter(source == "H" & signed == "Y") %>%
+  filter(draft_round <= round & year >= startyear & year <= endyear) %>%
+  count() %>%
+  pull(n)
+
+top_20_signed_mlb <- master %>%
+  filter(source == "H" & signed == "Y" & high_level == "MLB") %>%
+  filter(draft_round <= round & year >= startyear & year <= endyear) %>%
+  count() %>%
+  pull(n)
+  
+top_20_signed_mlb / top_20_signed_total
+
+}
+
+# 27.3% of signed top 20 round high school picks from 1990-2010 have made it to MLB
+
+```
+
+
+
+```{r, echo=FALSE}
+top_20_unsigned_total <- master %>%
+  filter(source == "H" & signed == "N" & draft_numb == 1) %>%
+  filter(draft_round <= 20 & year >= 1990 & year <= 2010) %>%
+  count() %>%
+  pull(n)
+
+top_20_unsigned_mlb <- master %>%
+  filter(source == "H" & signed == "N" & draft_numb == 1 & high_level == "MLB") %>%
+  filter(draft_round <= 20 & year >= 1990 & year <= 2010) %>%
+  count() %>%
+  pull(n)
+
+mlb_percentile_20u <- top_20_unsigned_mlb / top_20_unsigned_total
+
+# 22.7% of unsigned top 20 round high school picks from 1990-2010 have made it to MLB
+
+```
+
+
+
 
 
 
