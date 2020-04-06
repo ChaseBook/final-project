@@ -26,8 +26,21 @@ library(rvest)
 library(DataCombine)
 ```
 
+
 ```{r, include=FALSE}
-war <- read_csv("data/war.csv")
+
+# combining hitting and pitching war for each player-season
+
+batting_war <- read_csv("data/bat_war.csv") %>%
+  mutate(bat_war = as.numeric(WAR))
+
+pitching_war <- read_csv("data/pitch_war.csv") %>%
+  mutate(pitch_war = as.numeric(WAR)) %>%
+  select(mlb_ID, year_ID, pitch_war)
+
+war <- batting_war %>%
+  full_join(pitching_war, by = c("mlb_ID", "year_ID")) %>%
+  mutate(war = bat_war + pitch_war)
 ```
 
 
@@ -41,7 +54,7 @@ draft <- read_csv("data/draft_register.csv") %>%
 war_joined <- war %>%
   group_by(mlb_ID) %>%
   summarize(g = sum(G),
-            war = sum(as.numeric(WAR)))
+            war = sum(as.numeric(war)))
 
 ```
 
@@ -74,6 +87,20 @@ master <- draft %>%
 master$mlbid_1 <- NULL
 master$x27 <- NULL
 
+
+```
+
+
+```{r}
+
+# adding in age of MLB debut season
+
+debut <- war %>%
+  group_by(mlb_ID) %>%
+  summarize(debut = min(age))
+
+master <- master %>%
+  left_join(debut, by = c("mlbid" = "mlb_ID"))
 ```
 
 
@@ -624,7 +651,7 @@ https://chase-bookin.shinyapps.io/final_project_shiny/
 
 ```{r, echo=FALSE}
 
-mlb_percentile_signed <- function(round = 20, startyear = 1990, endyear = 2010) {
+mlb_percentile_signed <- function(round = 20, startyear = 1990, endyear = 2011) {
   
 top_20_signed_total <- master %>%
   filter(source == "H" & signed == "Y") %>%
@@ -642,6 +669,7 @@ top_20_signed_mlb / top_20_signed_total
 
 }
 
+mlb_percentile_signed(round = 20, startyear = 1990, endyear = 2011)
 # 27.3% of signed top 20 round high school picks from 1990-2010 have made it to MLB
 
 ```
@@ -649,22 +677,27 @@ top_20_signed_mlb / top_20_signed_total
 
 
 ```{r, echo=FALSE}
+
+mlb_percentile_unsigned <- function(round = 20, startyear = 1990, endyear = 2011) {
+  
 top_20_unsigned_total <- master %>%
   filter(source == "H" & signed == "N" & draft_numb == 1) %>%
-  filter(draft_round <= 20 & year >= 1990 & year <= 2010) %>%
+  filter(draft_round <= round & year >= startyear & year <= endyear) %>%
   count() %>%
   pull(n)
 
 top_20_unsigned_mlb <- master %>%
   filter(source == "H" & signed == "N" & draft_numb == 1 & high_level == "MLB") %>%
-  filter(draft_round <= 20 & year >= 1990 & year <= 2010) %>%
+  filter(draft_round <= round & year >= startyear & year <= endyear) %>%
   count() %>%
   pull(n)
 
-mlb_percentile_20u <- top_20_unsigned_mlb / top_20_unsigned_total
+top_20_unsigned_mlb / top_20_unsigned_total
 
+}
 # 22.7% of unsigned top 20 round high school picks from 1990-2010 have made it to MLB
 
+mlb_percentile_unsigned(round = 20, startyear = 1990, endyear = 2011)
 ```
 
 
