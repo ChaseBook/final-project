@@ -697,8 +697,61 @@ top_20_unsigned_mlb / top_20_unsigned_total
 }
 # 22.7% of unsigned top 20 round high school picks from 1990-2010 have made it to MLB
 
-mlb_percentile_unsigned(round = 20, startyear = 1990, endyear = 2011)
+mlb_percentile_unsigned(round = , startyear = 1990, endyear = 2011)
 ```
+
+
+```{r}
+
+peak_level <- function(max_round, startyear, endyear, min_round = 1) {
+  
+top_20_hs <- master %>%
+  filter(source == "H" & draft_numb == 1) %>%
+  filter(draft_round >= min_round & draft_round <= max_round & year >= startyear & year <= endyear) %>%
+  mutate(high_level = ifelse(high_level %in% c("-", "JrCollege", "NAIA", "NCAA"),
+                             "<=College",
+                             high_level)) %>%
+  group_by(signed, high_level) %>%
+  summarize(n = n()) %>%
+  group_by(signed) %>%
+  mutate(y = n/sum(n))
+
+top_20_hs$high_level <- factor(top_20_hs$high_level,levels = c("<=College",
+                                                               "Indy",
+                                                               "Rk",
+                                                               "A-",
+                                                               "A",
+                                                               "A+",
+                                                               "AA",
+                                                               "AAA",
+                                                               "MLB"))
+
+top_20_hs %>%
+  ggplot() +
+  geom_col(aes(x = high_level, y = y, fill = signed), position = "dodge") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme_light() +
+  labs(
+    x = "Peak Baseball Level Reached",
+    y = "Percentage",
+    signed = "Signed?",
+    title = "Distribution of Peak Baseball Career Level of High School Picks",
+    subtitle = "Grouped by whether or not the player signed out of high school"
+  )
+
+}
+
+peak_level(max_round = 20, startyear = 1990, endyear = 2011, min_round = 10)
+```
+
+
+
+
+
+
+
+
+
 
 
 
