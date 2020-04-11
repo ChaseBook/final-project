@@ -49,13 +49,15 @@ is the relationship between a player's decision of whether to sign and the
 longevity and production of their professional baseball career? Of drafted high
 school players that make it to the big leagues, do players that choose to attend
 college develop and experience more fruitful careers than players that sign
-immediately out of high school? POSSIBLE RESEARCH proportion of picks on high
+immediately out of high school? The Major League Baseball draft is full of
+fascinating topics to analyze, and in this project I will use data to quantify
+high school players' career outcomes in relation to this decision.
+
+POSSIBLE RESEARCH proportion of picks on high
 school players for each MLB team and what proportion make it to the bigs to see
 if certain teams better at developing hs talent
   
-  The Major League Baseball draft is full of fascinating topics to analyze, and in
-this project I will use data to quantify high school players' career outcomes in
-relation to this decision.
+  
 
 
 ```{r}
