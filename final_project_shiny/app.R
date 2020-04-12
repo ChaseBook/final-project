@@ -1,23 +1,40 @@
 
 library(shiny)
+library(graphics)
 library(shinythemes)
 library(tidyverse)
 library(gt)
 
 
-ui <- fluidPage(theme = shinytheme("superhero"),tabsetPanel(
-  
-  # first tab 
-  
-  tabPanel("Introduction",
-           
-           #descriptive title to engage viewers       
-           titlePanel("High School Players and The Major League Baseball Draft"),
-           
-           #explaining project, created in the server. 
-           
-           htmlOutput("intro")
-)))
+ui <- fluidPage(theme = shinytheme("flatly"),
+                
+            
+                navbarPage("Exploring the MLB Draft",
+                           
+                           tabPanel("Introduction", align = "center",
+                                    
+                              titlePanel("High School Players and The Major League Baseball Draft"),
+                              
+                              br(),
+                              
+                              tags$img(src = "draft_2020.jpg", width = "540px", height = "292.5px"),
+                              
+                              br(),
+                              br(),
+                              
+                              h2("About the Project", align = "center"),
+                              
+                              htmlOutput("intro")),
+                           
+                           tabPanel("Turning Down the Draft", align = "center"),
+                           
+                           tabPanel("Navigating the Minors", align = "center"),
+                           
+                           tabPanel("Major League Success", align = "center")
+                           
+                                       
+                                       
+))
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
@@ -26,6 +43,8 @@ server <- function(input, output) {
   library(tidyverse)
   library(ggthemes)
   library(directlabels)
+  
+  
   
   output$intro<-renderUI({
     

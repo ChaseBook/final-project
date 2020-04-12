@@ -106,9 +106,11 @@ master <- master %>%
 
 ```{r, echo=FALSE}
 draft_2000_2012 <- draft %>%
-  filter(year >= 2000 & year <= 2012)
+  filter(year >= 1990 & year <= 2011)
 
 draft_2000_2012 <- draft_2000_2012 %>%
+  filter(!is.na(high_level)) %>%
+  filter(draft_round <= 50) %>%
   mutate(mlb_made = ifelse(high_level == "MLB", 1, 0)) %>%
   mutate(ignore = 1) %>%
   group_by(draft_round) %>%
@@ -121,7 +123,7 @@ ggplot(draft_2000_2012, mapping = aes(draft_round, percent_mlb)) +
     x = "Draft Round",
     y = "Percent to reach Major Leagues",
     title = "Percent of Draft Picks by Round to Reach the Majors",
-    subtitle = "Data from 2000-2012 drafts"
+    subtitle = "Data from 1990-2011 drafts"
   ) 
 ```
 
@@ -137,7 +139,9 @@ grow_talent <- master %>%
   mutate(mlb_made = ifelse(high_level == "MLB", 1, 0)) %>%
   mutate(ignore = 1) %>%
   group_by(teamname) %>%
-  summarize(percent_mlb = sum(mlb_made) / sum(ignore))
+  summarize(mlb = sum(mlb_made), 
+            total = sum(ignore),
+            percent_mlb = sum(mlb_made) / sum(ignore))
 
 ggplot(grow_talent, mapping = aes(x = reorder(teamname, -percent_mlb), percent_mlb)) +
   geom_col() +
@@ -176,10 +180,39 @@ ggplot(hs_signed_90_09, mapping = aes(draft_round, percent_mlb)) +
     x = "Round",
     y = "Percent of Signed High School Picks to MLB",
     title = "Percent of Signed High School Picks to MLB by Round",
-    subtitle = "Data: 1980-2009 Drafts"
+    subtitle = "Data: 1990-2009 Drafts"
   )
 
 ```
+
+
+
+```{r, echo=FALSE}
+college_signed <- master %>%
+  filter(source == "C" & signed == "Y") %>%
+  mutate(mlb_made = ifelse(high_level == "MLB", 1, 0)) 
+
+
+college_signed_90_09 <- college_signed %>%
+  mutate(ignore = 1) %>%
+  group_by(draft_round) %>%
+  filter(year >= 1990 & year <= 2009) %>%
+  filter(draft_round <= 40) %>%
+  summarize(percent_mlb = sum(mlb_made) / sum(ignore))
+
+ggplot(college_signed_90_09, mapping = aes(draft_round, percent_mlb)) +
+  geom_col() +
+  theme_economist_white() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(
+    x = "Round",
+    y = "Percent of College Picks to MLB",
+    title = "Percent of Signed College Picks to MLB by Round",
+    subtitle = "Data: 1990-2009 Drafts"
+  )
+
+```
+
 
 ```{r, include=FALSE}
 
