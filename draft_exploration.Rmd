@@ -736,7 +736,29 @@ mlb_percentile_unsigned(round = , startyear = 1990, endyear = 2011)
 ```
 
 
-```{r}
+```{r, include=FALSE}
+# PREPPING master data for peak level distribution in shiny by ordering
+# high_level factors
+
+master_peak <- master %>%
+  mutate(high_level = ifelse(high_level %in% c("-", "JrCollege", "NAIA", "NCAA"),
+                                  "<=College",
+                                  high_level)) %>%
+  mutate(high_level = factor(high_level, levels = c("<=College",
+                                                    "Indy",
+                                                    "Rk",
+                                                    "A-",
+                                                    "A",
+                                                    "A+",
+                                                    "AA",
+                                                    "AAA",
+                                                    "MLB")))
+                                                               
+
+```
+
+
+```{r, echo=FALSE}
 
 peak_level <- function(max_round, startyear, endyear, min_round = 1) {
   
@@ -749,17 +771,16 @@ top_20_hs <- master %>%
   group_by(signed, high_level) %>%
   summarize(n = n()) %>%
   group_by(signed) %>%
-  mutate(y = n/sum(n))
-
-top_20_hs$high_level <- factor(top_20_hs$high_level,levels = c("<=College",
-                                                               "Indy",
-                                                               "Rk",
-                                                               "A-",
-                                                               "A",
-                                                               "A+",
-                                                               "AA",
-                                                               "AAA",
-                                                               "MLB"))
+  mutate(y = n/sum(n)) %>%
+  mutate(high_level = factor(high_level,levels = c("<=College",
+                                                   "Indy",
+                                                   "Rk",
+                                                   "A-",
+                                                   "A",
+                                                   "A+",
+                                                   "AA",
+                                                   "AAA",
+                                                   "MLB")))
 
 top_20_hs %>%
   ggplot() +
@@ -776,13 +797,13 @@ top_20_hs %>%
 
 }
 
-peak_level(max_round = 20, startyear = 1990, endyear = 2011, min_round = 1)
+peak_level(max_round = 20, startyear = 2010, endyear = 2010, min_round = 1)
 ```
 
 
 
 
-```{r}
+```{r, echo=FALSE}
 
 debut_age <- function(max_round, startyear, endyear, min_round = 1) {
   
