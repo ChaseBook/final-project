@@ -57,7 +57,12 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                                   mainPanel(
                                                     plotOutput("redraftProb")
                                                   )
-                                                )
+                                                ),
+                                               
+                                               br(),
+                                               br(),
+                                               
+                                               htmlOutput("redraftprobExp")
                                        ),
                                     
                                       tabPanel("Change in Draft Stock",
@@ -173,7 +178,7 @@ server <- function(input, output) {
   
 # Re-draft probability graph
   
-  redraft_subset <- reactive({redraft_table%>% filter(start_year %in%input$redraft_year)})
+  redraft_subset <- reactive({redraft_table%>% filter(start_year %in% input$redraft_year)})
   
   output$redraftProb <- renderPlot({
       
@@ -193,14 +198,52 @@ server <- function(input, output) {
       scale_color_viridis_c() +
       scale_x_continuous(breaks = c(5, 10, 20, 30, 40, 50))
   })
+  
+  output$redraftprobExp <- renderUI({
+    
+    ex_1 <- p("One factor high school draftees should consider when deciding 
+              whether to sign is whether they will get another chance to 
+              play professional baseball. For most prospects, turning down pro 
+              ball for a four-year college means they will not be draft 
+              eligible until after their junior year. In this time, they run
+              the risk of injury, lack of production in college, and other
+              factors that may prevent them from being drafted again.")
+    
+    ex_2 <- p("This graph illustrates the probability of being redrafted 
+             given a player is drafed in a certain range of rounds
+             (1-5, 5-10, 10-20,...) out of high school and opts to turn
+             it down. The data is sorted by five year windows in which the 
+             player graduated high school in order to track how patterns
+             in redraft probability have changed over time.")
+    
+    ex_3 <- p("With all five time frames selected, we see the most recent
+             period starting in 2010 closely resembles the 1990 and 1995
+             data for picks within the top 20 rounds. However, from the 20th
+             round onward, the slope of the 2010 redraft probability curve is
+             less steep than any other time period. Late-round high school
+             picks in the 2010 period have the highest chance of being redrafted
+             relative to earlier periods. There are various possible explanations
+             for this trend, one being that teams are simply better at identifying
+             high school prospects than in years previous, perhaps through new
+             technologies. This would increase the likelihood these players continue
+             to succeed in college and get redrafted. Another possibility is teams
+             may be using more late-round picks on top high school prospects who
+             are clearly going to college, whether not they truly mean to sign
+             them. These would be the guys who are top players that get drafted
+             in the 35th round, turn down the draft, and are clearly going to
+             be redrafted later on.")
+    
+    HTML(paste(ex_1, br(),ex_2, br(), ex_3))
+    
+  })
     
 # Re-draft stock graph
   
-  stock_subset <- reactive({redraft_table%>% filter(start_year %in%input$stock_year)})  
+  stock_subset <- reactive({redraft_table%>% filter(start_year %in% input$stock_year)})  
   
   output$redraftStock <- renderPlot({
       
-    redraft_table %>%
+    stock_subset() %>%
       ggplot(aes(round, mean_round_diff)) +
       geom_point(na.rm = TRUE) +
       geom_line(aes(group = start_year, color = start_year), na.rm = TRUE) +

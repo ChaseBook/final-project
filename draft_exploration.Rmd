@@ -24,6 +24,7 @@ library(Lahman)
 library(xml2)
 library(rvest)
 library(DataCombine)
+library(RColorBrewer)
 ```
 
 
