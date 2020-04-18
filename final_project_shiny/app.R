@@ -152,8 +152,8 @@ server <- function(input, output) {
               bonuses and attend college. For some, the decision pays off handsomely and the
               prospect signs for more money as a polished college star. For others, they get
               injured or fail to perform in college and never play professional baseball.
-              Money is obviously not the only factor in a high school prospect's decision -
-              the team, prospect's health, and family influences among other things can play a
+              Money is not the only factor in a high school prospect's decision -
+              the team, the prospect's health, and family influences among other things can play a
               significant role. However, given the amount of money and the opportunity many
               high school players opt to delay, it begs the question of how the decision plays
               out for these athletes.")
@@ -229,7 +229,7 @@ server <- function(input, output) {
              to succeed in college and get redrafted. Another possibility is teams
              may be using more late-round picks on top high school prospects who
              are clearly going to college, whether not they truly mean to sign
-             them. These would be the guys who are top players that get drafted
+             them. These would be the elite high school players that get drafted
              in the 35th round, turn down the draft, and are clearly going to
              be redrafted later on.")
     
@@ -249,7 +249,7 @@ server <- function(input, output) {
       geom_line(aes(group = start_year, color = start_year), na.rm = TRUE) +
       labs(
         x = "Round Range Drafted out of High School",
-        y = "Average Improvement Re-draft Round",
+        y = "Average Improvement in Re-draft Round",
         color = "Time Frame",
         title = "Average Change in Round of Re-drafted Unsigned High School Picks",
         subtitle = "Organized by initial round range and time period"

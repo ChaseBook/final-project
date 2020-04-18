@@ -92,7 +92,7 @@ master$x27 <- NULL
 ```
 
 
-```{r}
+```{r, include=FALSE}
 
 # adding in age of MLB debut season
 
@@ -102,6 +102,56 @@ debut <- war %>%
 
 master <- master %>%
   left_join(debut, by = c("mlbid" = "mlb_ID"))
+```
+
+
+```{r, include=FALSE}
+
+# Making table of only mlb_ID and the player's first and final year in the MLB
+# to derive MLB career length and join to master.
+
+# NOTE: I kept getting more observations in the new master set after joining
+# mlb_career with the left join because guys who played for multiple teams in
+# their first or last year were counted that many times in the data so they
+# matched multiple times when joined. Therefore, I grouped each set by mlb_ID
+# and year and sliced only one observation - it didn't matter which because we
+# only need the year.
+
+mlb_start <- war %>%
+  filter(!is.na(mlb_ID)) %>%
+  group_by(mlb_ID) %>%
+  filter(year_ID == min(year_ID)) %>%
+  select(mlb_ID, year_ID) %>%
+  rename(mlb_start = year_ID) %>%
+  group_by(mlb_ID, mlb_start) %>%
+  slice(1) %>%
+  ungroup()
+
+mlb_end <- war %>%
+  filter(!is.na(mlb_ID)) %>%
+  group_by(mlb_ID) %>%
+  filter(year_ID == max(year_ID)) %>%
+  select(mlb_ID, year_ID) %>%
+  rename(mlb_end = year_ID) %>%
+  group_by(mlb_ID, mlb_end) %>%
+  slice(1) %>%
+  ungroup()
+
+
+# joined mlb first year and last year to create career_length by subtracting
+# first year from last year in MLB and adding 1 so if career was 1999 only it
+# counts as one season.
+
+mlb_career <- mlb_start %>%
+  left_join(mlb_end, by = "mlb_ID") %>%
+  mutate(mlb_length = mlb_end - mlb_start + 1) %>%
+  select(mlb_ID, mlb_length)
+
+# joining mlb career length set to master table
+
+master <- master %>%
+  left_join(mlb_career, by = c("mlbid" = "mlb_ID"))
+
 ```
 
 
@@ -674,6 +724,8 @@ redraft_table %>%
   scale_y_continuous(breaks = c(-10, -5, 0, 10, 20)) +
   geom_hline(color = "red", linetype = "dashed", yintercept = 0)
 ```
+
+
 Note estimated intercept with y=0 to see when on average it becomes beneficial
 to a player's redraft stock to not sign out of high school. Important to keep in
 mind this is for players who are redrafted, so back half of draft improvement
