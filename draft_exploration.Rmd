@@ -51,9 +51,12 @@ draft <- read_csv("data/draft_register.csv") %>%
   clean_names()
 
 # grouping war data by player and summing career games played and war
+# NOTE: I filtered out NA war observations so the summarized war would not also
+# be NA due to a single NA observation of war
 
 war_joined <- war %>%
   group_by(mlb_ID) %>%
+  filter(!is.na(war)) %>%
   summarize(g = sum(G),
             war = sum(as.numeric(war)))
 
@@ -889,8 +892,6 @@ debut %>%
 debut_age(max_round = 20, startyear = 1990, endyear = 2011, min_round = 1)
 
 ```
-
-
 
 
 
