@@ -160,7 +160,7 @@ master <- master %>%
 ```
 
 
-```{r, echo=FALSE}
+```{r, include=FALSE}
 
 # Using Lahman Fielding dataset to collect player positions Grouped the data by
 # player and found the mid career year to get an estimate for what their true
@@ -959,69 +959,70 @@ hs_mlb_length <- master %>%
             mean_length = mean(mlb_length),
             q3 = quantile(mlb_length, 0.75))
 
-hs_mlb_war <- master %>%
-  filter(source == "H" & draft_numb == 1 & high_level == "MLB") %>%
-  filter(mlb_end <= 2017) %>%
-  group_by(signed) %>%
-  summarize(q1 = quantile(war, 0.25),
-            median_war = median(war),
-            mean_war = mean(war),
-            q3 = quantile(war, 0.75))
+career_length <- function(pos = c("C", "1B", "2B", "3B", "SS", "OF", "P")) {
 
-# Made a gt table of the summary data from the above hs_mlb_war table
+  hs_mlb_inactive <- master %>%
+    filter(source == "H" & draft_numb == 1 & high_level == "MLB") %>%
+    filter(position %in% pos) %>%
+    filter(mlb_end <= 2017)
 
-gt(data = hs_mlb_war) %>%
-  tab_header(
-    title = "Career Wins Above Replacement of High School Picks to Reach MLB"
-  ) %>%
-  tab_spanner(
-    columns = vars(signed, q1, median_war, mean_war, q3),
-    label = "Grouped by whether player signed out of high school"
-  ) %>%
-  cols_label(
-    signed = "Signed?",
-    q1 = "25th Percentile",
-    median_war = "Median",
-    mean_war = "Mean",
-    q3 = "75th Percentile"
-  ) %>%
-  fmt_number(
-    columns = vars(q1, median_war, mean_war, q3),
-    decimals = 2
-  )
-  
+  ggplot(hs_mlb_inactive, aes(signed, mlb_length, fill = signed)) +
+    geom_boxplot() +
+    coord_flip() +
+    theme_light() +
+    labs(
+      x = "Years Played in MLB",
+      y = "Signed out of High School?",
+      title = "MLB Career Length Summary of High School Picks to Reach MLB",
+      subtitle = "Grouped by whether player signed out of high school"
+    )
 
-hs_mlb_inactive <- master %>%
-  filter(source == "H" & draft_numb == 1 & high_level == "MLB") %>%
-  filter(mlb_end <= 2017)
-
-ggplot(hs_mlb_inactive, aes(signed, mlb_length, fill = signed)) +
-  geom_boxplot() +
-  coord_flip() +
-  theme_light() +
-  labs(
-    x = "Years Played in MLB",
-    y = "Signed out of High School?",
-    title = "MLB Career Length Summary of High School Picks to Reach MLB",
-    subtitle = "Grouped by whether player signed out of high school"
-  )
-  
-ggplot(hs_mlb_inactive, aes(signed, war/mlb_length, fill = signed)) +
-  geom_boxplot() +
-  coord_flip() +
-  theme_light() +
-  labs(
-    x = "Career MLB Wins Above Replacement",
-    y = "Signed out of High School?",
-    title = "MLB Career Wins Above Replacement of High School Picks to Reach MLB",
-    subtitle = "Grouped by whether player signed out of high school"
-  )
-
+}
+ 
+career_length()
 ```
 
 
+```{r, echo=FALSE}
 
+war_summary <- function(pos = c("C", "1B", "2B", "3B", "SS", "OF", "P")) {
 
+  hs_mlb_war <- master %>%
+    filter(source == "H" & draft_numb == 1 & high_level == "MLB") %>%
+    filter(position %in% pos) %>%
+    filter(mlb_end <= 2017) %>%
+    group_by(signed) %>%
+    summarize(q1 = quantile(war, 0.25),
+              median_war = median(war),
+              mean_war = mean(war),
+              q3 = quantile(war, 0.75))
+
+# Made a gt table of the summary data from the above hs_mlb_war table
+
+  gt(data = hs_mlb_war) %>%
+    tab_header(
+      title = "Career Wins Above Replacement of High School Picks to Reach MLB"
+    ) %>%
+    tab_spanner(
+      columns = vars(signed, q1, median_war, mean_war, q3),
+      label = "Grouped by whether player signed out of high school"
+    ) %>%
+    cols_label(
+      signed = "Signed?",
+      q1 = "25th Percentile",
+      median_war = "Median",
+      mean_war = "Mean",
+      q3 = "75th Percentile"
+    ) %>%
+    fmt_number(
+      columns = vars(q1, median_war, mean_war, q3),
+      decimals = 2
+    )
+  
+}
+
+war_summary()
+```
 
 
 
