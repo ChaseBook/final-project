@@ -41,6 +41,8 @@ pitching_war <- read_csv("data/pitch_war.csv") %>%
 
 war <- batting_war %>%
   full_join(pitching_war, by = c("mlb_ID", "year_ID")) %>%
+  mutate(bat_war = ifelse(is.na(bat_war), 0, bat_war)) %>%
+  mutate(pitch_war = ifelse(is.na(pitch_war), 0, pitch_war)) %>%
   mutate(war = bat_war + pitch_war)
 ```
 
@@ -148,7 +150,7 @@ mlb_end <- war %>%
 mlb_career <- mlb_start %>%
   left_join(mlb_end, by = "mlb_ID") %>%
   mutate(mlb_length = mlb_end - mlb_start + 1) %>%
-  select(mlb_ID, mlb_length)
+  select(mlb_ID, mlb_end, mlb_length)
 
 # joining mlb career length set to master table
 
@@ -889,11 +891,87 @@ debut %>%
 
 }
 
-debut_age(max_round = 20, startyear = 1990, endyear = 2011, min_round = 1)
+debut_age(max_round = 40, startyear = 1990, endyear = 2011, min_round = 1)
 
 ```
 
 
+```{r, echo=FALSE}
+
+# I created hs_mlb_length which takes all high school picks who reached majors
+# and have not been in the majors since 2017 latest to make it very likely their
+# MLB career is over. I then grouped by whether they signed out of high school
+# and found some summary stats for the career lengths of each group and career
+# WAR.
+
+hs_mlb_length <- master %>%
+  filter(source == "H" & draft_numb == 1 & high_level == "MLB") %>%
+  filter(mlb_end <= 2017) %>%
+  group_by(signed) %>%
+  summarize(q1 = quantile(mlb_length, 0.25),
+            median_length = median(mlb_length),
+            mean_length = mean(mlb_length),
+            q3 = quantile(mlb_length, 0.75))
+
+hs_mlb_war <- master %>%
+  filter(source == "H" & draft_numb == 1 & high_level == "MLB") %>%
+  filter(mlb_end <= 2017) %>%
+  group_by(signed) %>%
+  summarize(q1 = quantile(war, 0.25),
+            median_war = median(war),
+            mean_war = mean(war),
+            q3 = quantile(war, 0.75))
+
+# Made a gt table of the summary data from the above hs_mlb_war table
+
+gt(data = hs_mlb_war) %>%
+  tab_header(
+    title = "Career Wins Above Replacement of High School Picks to Reach MLB"
+  ) %>%
+  tab_spanner(
+    columns = vars(signed, q1, median_war, mean_war, q3),
+    label = "Grouped by whether player signed out of high school"
+  ) %>%
+  cols_label(
+    signed = "Signed?",
+    q1 = "25th Percentile",
+    median_war = "Median",
+    mean_war = "Mean",
+    q3 = "75th Percentile"
+  ) %>%
+  fmt_number(
+    columns = vars(q1, median_war, mean_war, q3),
+    decimals = 2
+  )
+  
+
+hs_mlb_inactive <- master %>%
+  filter(source == "H" & draft_numb == 1 & high_level == "MLB") %>%
+  filter(mlb_end <= 2017)
+
+ggplot(hs_mlb_inactive, aes(signed, mlb_length, fill = signed)) +
+  geom_boxplot() +
+  coord_flip() +
+  theme_light() +
+  labs(
+    x = "Years Played in MLB",
+    y = "Signed out of High School?",
+    title = "MLB Career Length Summary of High School Picks to Reach MLB",
+    subtitle = "Grouped by whether player signed out of high school"
+  )
+  
+ggplot(hs_mlb_inactive, aes(signed, war/mlb_length, fill = signed)) +
+  geom_boxplot() +
+  coord_flip() +
+  theme_light() +
+  labs(
+    x = "Career MLB Wins Above Replacement",
+    y = "Signed out of High School?",
+    title = "MLB Career Wins Above Replacement of High School Picks to Reach MLB",
+    subtitle = "Grouped by whether player signed out of high school"
+  )
+
+```
 
 
 
