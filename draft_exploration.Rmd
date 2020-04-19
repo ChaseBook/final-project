@@ -161,6 +161,52 @@ master <- master %>%
 
 
 ```{r, echo=FALSE}
+
+# Using Lahman Fielding dataset to collect player positions Grouped the data by
+# player and found the mid career year to get an estimate for what their true
+# position is. I then filtered each grouped player's data for their mid career
+# year and the row of the position they played the most games at in that season
+# (the table has a row for each position a player played each season). I then
+# selected the playerID and POS columns to then join to the war dataset which
+# contains matching player IDs. Unfortunately the Lahman table does not contain
+# MLB IDs or matching player IDs so I need to go through the war table to match
+# the player ID to the MLB ID.
+
+fielding <- Fielding %>%
+  group_by(playerID) %>%
+  mutate(mid_career = round(((max(yearID) + min(yearID)) / 2), 0)) %>%
+  filter(yearID == mid_career) %>%
+  arrange(desc(G)) %>%
+  slice(1) %>%
+  select(playerID, POS)
+
+# joining fielding to war to get mlb ID attached to position
+
+war <- war %>%
+  left_join(fielding, by = c("player_ID" = "playerID"))
+
+
+# making war positions joinable to master by ensuring each MLB ID shows up only
+# once. I grouped by mlb id and sliced a single row because all have the same
+# position for a given player
+
+war_positions <- war %>%
+  group_by(mlb_ID) %>%
+  slice(1) %>%
+  select(mlb_ID, POS)
+
+
+# Joining the war_positions table to master by mlb ID and renamed position
+
+master <- master %>%
+  left_join(war_positions, by = c("mlbid" = "mlb_ID")) %>%
+  rename(position = POS)
+
+```
+
+
+
+```{r, echo=FALSE}
 draft_2000_2012 <- draft %>%
   filter(year >= 1990 & year <= 2011)
 
