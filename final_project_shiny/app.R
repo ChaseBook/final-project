@@ -6,7 +6,7 @@ library(tidyverse)
 library(gt)
 
 
-master <- read_csv("csv/project_master.csv")
+master <- read_csv("csv/draft_master.csv")
 redraft_table <- read_csv("csv/redraft_table.csv")
 
 ui <- fluidPage(theme = shinytheme("flatly"),
