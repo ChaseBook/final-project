@@ -6,7 +6,7 @@ library(tidyverse)
 library(gt)
 
 
-master <- read_csv("csv/draft_master.csv")
+master <- read_csv("csv/master_final.csv")
 redraft_table <- read_csv("csv/redraft_table.csv")
 
 ui <- fluidPage(theme = shinytheme("flatly"),
@@ -121,7 +121,73 @@ ui <- fluidPage(theme = shinytheme("flatly"),
 
  # Major League Success Tab -------------------------
  
-                           tabPanel("Major League Success", align = "center")
+                           tabPanel("Major League Success", align = "center",
+                                    
+                                    
+                                    tabsetPanel(
+                                      
+                                      tabPanel("MLB Longevity",
+                                               
+                                               titlePanel("How Long Do High School Picks Stay in the Show?"),
+                                               
+                                               br(),
+                                               br(),
+                                               
+                                               sidebarLayout(
+                                                 sidebarPanel(
+                                                   
+                                                   checkboxGroupInput("length_position",
+                                                                      "Position:",
+                                                                      c("C", "1B", "2B", "3B", "SS", "OF", "P"), 
+                                                                      selected = c("C", "1B", "2B", "3B", "SS", "OF", "P")
+                                                   )
+                                                 ),
+                                               
+                                                 
+                                                 mainPanel(
+                                                   plotOutput("careerLength")
+                                                 )
+                                               ),
+                                               
+                                               br(),
+                                               br(),
+                                               
+                                               br()
+                                               
+                                      ),
+                                      
+                                      tabPanel("MLB Production",
+                                               
+                                               titlePanel("How do High School Picks Perform in the Big Leagues?"),
+                                               
+                                               br(),
+                                               br(),
+                                               
+                                               sidebarLayout(
+                                                 sidebarPanel(
+                                                   
+                                                   checkboxGroupInput("war_position",
+                                                                      "Position:",
+                                                                      c("C", "1B", "2B", "3B", "SS", "OF", "P"), 
+                                                                      selected = c("C", "1B", "2B", "3B", "SS", "OF", "P")
+                                                   ),
+                                                   
+                                                   br(),
+                                                   
+                                                   h2("Range of Years in Which Career Ended"),
+                                                   
+                                                   numericInput("waryearMin", "Minimum Year:", value = 1990, min = 1965, max = 2017),
+                                                   numericInput("waryearMax", "Maximum Year:", value = 2017, min = 1965, max = 2017)
+                                                 ),
+                                                 
+                                                 mainPanel(
+                                                   gt_output("careerWar")
+                                                 )
+                                               )
+                                               
+                                      )
+                                    )
+                           )
                            
                                        
                                        
@@ -306,7 +372,66 @@ server <- function(input, output) {
     
   })
   
-
+# career length subset and graph
+  
+  length_subset <- reactive({master %>%
+      filter(source == "H" & draft_numb == 1 & high_level == "MLB") %>%
+      filter(position %in% input$length_position) %>%
+      filter(mlb_end <= 2017)
+  })
+  
+  output$careerLength <- renderPlot({
+    length_subset() %>%
+    ggplot(aes(signed, mlb_length, fill = signed)) +
+      geom_boxplot() +
+      coord_flip() +
+      theme_light() +
+      theme(text = element_text(size=20)) +
+      scale_y_continuous(breaks = c(0, 5, 10, 15, 20)) +
+      labs(
+        x = "Years Played in MLB",
+        y = "Signed out of High School?",
+        title = "MLB Career Length Summary of High School Picks to Reach MLB",
+        subtitle = "Grouped by whether player signed out of high school"
+      )
+  })
+  
+  
+  war_subset <- reactive({master %>%
+      filter(source == "H" & draft_numb == 1 & high_level == "MLB") %>%
+      filter(position %in% input$war_position) %>%
+      filter(mlb_end >= input$waryearMin & mlb_end <= input$waryearMax) %>%
+      mutate(war_annual = war / mlb_length) %>%
+      group_by(signed) %>%
+      summarize(q1 = quantile(war, 0.25),
+                median_war = median(war),
+                mean_war = mean(war),
+                q3 = quantile(war, 0.75))
+    
+  })
+  
+  output$careerWar <- render_gt({
+    war_subset() %>%
+      gt() %>%
+      tab_header(
+        title = "Career Wins Above Replacement of High School Picks to Reach MLB"
+      ) %>%
+      tab_spanner(
+        columns = vars(signed, q1, median_war, mean_war, q3),
+        label = "Grouped by whether player signed out of high school"
+      ) %>%
+      cols_label(
+        signed = "Signed?",
+        q1 = "25th Percentile",
+        median_war = "Median",
+        mean_war = "Mean",
+        q3 = "75th Percentile"
+      ) %>%
+      fmt_number(
+        columns = vars(q1, median_war, mean_war, q3),
+        decimals = 2
+      )
+  })
         
     
 }

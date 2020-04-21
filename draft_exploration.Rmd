@@ -25,6 +25,7 @@ library(xml2)
 library(rvest)
 library(DataCombine)
 library(RColorBrewer)
+library(usmap)
 ```
 
 
@@ -150,7 +151,7 @@ mlb_end <- war %>%
 mlb_career <- mlb_start %>%
   left_join(mlb_end, by = "mlb_ID") %>%
   mutate(mlb_length = mlb_end - mlb_start + 1) %>%
-  select(mlb_ID, mlb_end, mlb_length)
+  select(mlb_ID, mlb_start, mlb_end, mlb_length)
 
 # joining mlb career length set to master table
 
@@ -1024,8 +1025,61 @@ war_summary <- function(pos = c("C", "1B", "2B", "3B", "SS", "OF", "P")) {
 war_summary()
 ```
 
+```{r, echo=FALSE}
+
+# I filtered the master data for signed high school picks before 2012 to make it
+# likely they are either in the majors or not in an organization. I grouped by
+# draft region, which for high school picks is the abbreviation of their home
+# state. I then summarized the total drafted, total to make it to MLB, and the
+# percent to MLB. I then joined the summarized data to the statepop data from
+# usmap package to get the state names for mapping. I filtered out states with
+# fewer than ten draft picks and plotted the data.
+
+statepop <- statepop
+
+state_mlb <- master %>%
+  filter(source == "H" & draft_numb == 1 & signed == "Y") %>%
+  filter(year <= 2012) %>%
+  mutate(mlb_made_numeric = ifelse(high_level == "MLB", 1, 0)) %>%
+  group_by(draft_region_id) %>%
+  summarize(percent_mlb = sum(mlb_made_numeric) / n(),
+            drafted = n(),
+            mlb = sum(mlb_made_numeric))
+
+state_mlb <- state_mlb %>%
+  left_join(statepop, by = c("draft_region_id" = "abbr"))
+  
+state_mlb <- state_mlb %>%
+  filter(!is.na(full)) %>%
+  mutate(full = reorder(full, drafted),
+         big_state = ifelse(draft_region_id %in% c("CA", "TX", "FL"), 1, 0)) 
+
+plot_usmap(data = state_mlb %>%
+             filter(drafted >= 50),
+           values = "percent_mlb", color = "white") + 
+  scale_fill_viridis_c() +
+  theme(legend.position = "right")
+  
+
+```
 
 
+```{r}
+state_mlb %>%
+  filter(big_state == 0) %>%
+  ggplot(aes(full, drafted, color = percent_mlb)) +
+  coord_flip() +
+  geom_point() +
+  scale_y_continuous(breaks = c(0, 50, 100, 200, 300)) +
+  scale_color_viridis_c() +
+  labs(
+    x = "State",
+    y = "Number of Players Drafted",
+    title = "Number of High School Players Drafted by State",
+    subtitle = "From 1965-2012 - Outliers: (California: 2249, Texas: 627, Florida: 1069)",
+    color = "MLB Percent"
+  )
+```
 
 
 
