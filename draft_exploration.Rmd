@@ -1060,17 +1060,18 @@ plot_usmap(data = state_mlb %>%
   scale_fill_viridis_c() +
   theme(legend.position = "right")
   
-
 ```
 
 
-```{r}
+```{r, echo=FALSE}
 state_mlb %>%
   filter(big_state == 0) %>%
   ggplot(aes(full, drafted, color = percent_mlb)) +
   coord_flip() +
   geom_point() +
-  scale_y_continuous(breaks = c(0, 50, 100, 200, 300)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 250, 300, 350)) +
+  theme_gray() +
+  theme(axis.text.y = element_text(size = 7.5)) +
   scale_color_viridis_c() +
   labs(
     x = "State",
@@ -1081,6 +1082,13 @@ state_mlb %>%
   )
 ```
 
+```{r, include=FALSE}
+master %>%
+  filter(source == "H" & draft_numb == 1 & high_level == "MLB" & signed == "Y") %>%
+  filter(draft_region_id == "MT") %>%
+  arrange(desc(year)) %>%
+  select(year, draft_round, teamname, first_name, last_name, mlb_length)
+```
 
 
 
