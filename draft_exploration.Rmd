@@ -29,7 +29,7 @@ library(usmap)
 ```
 
 
-```{r, include=FALSE}
+```{r prep_war, include=FALSE}
 
 # combining hitting and pitching war for each player-season
 
@@ -65,7 +65,7 @@ war_joined <- war %>%
 
 ```
 
-```{r, include=FALSE}
+```{r master, include=FALSE}
 
 # joined draft and war data by player mlb ID, then mutated teamname to condense
 # the Angel's team names into a single team. I then arranged the data by year,
@@ -98,7 +98,7 @@ master$x27 <- NULL
 ```
 
 
-```{r, include=FALSE}
+```{r master_edit, include=FALSE}
 
 # adding in age of MLB debut season
 
@@ -111,7 +111,7 @@ master <- master %>%
 ```
 
 
-```{r, include=FALSE}
+```{r add_MLB_years, include=FALSE}
 
 # Making table of only mlb_ID and the player's first and final year in the MLB
 # to derive MLB career length and join to master.
@@ -161,7 +161,7 @@ master <- master %>%
 ```
 
 
-```{r, include=FALSE}
+```{r add_pos, include=FALSE}
 
 # Using Lahman Fielding dataset to collect player positions Grouped the data by
 # player and found the mid career year to get an estimate for what their true
@@ -207,7 +207,7 @@ master <- master %>%
 
 
 
-```{r, echo=FALSE}
+```{r by_round, echo=FALSE}
 draft_2000_2012 <- draft %>%
   filter(year >= 1990 & year <= 2011)
 
@@ -230,7 +230,7 @@ ggplot(draft_2000_2012, mapping = aes(draft_round, percent_mlb)) +
   ) 
 ```
 
-```{r, echo=FALSE}
+```{r grow_talent, echo=FALSE}
 grow_talent <- master %>%
   filter(source == "H" & signed == "Y") %>%
   mutate(decade = ifelse(year %in% 1970:1979, 1970,
@@ -261,7 +261,7 @@ ggplot(grow_talent, mapping = aes(x = reorder(teamname, -percent_mlb), percent_m
 
 
 
-```{r, echo=FALSE}
+```{r hs_by_round, echo=FALSE}
 
 hs_signed <- master %>%
   filter(source == "H" & signed == "Y") %>%
@@ -290,7 +290,7 @@ ggplot(hs_signed_90_09, mapping = aes(draft_round, percent_mlb)) +
 
 
 
-```{r, echo=FALSE}
+```{r college_by_round, echo=FALSE}
 college_signed <- master %>%
   filter(source == "C" & signed == "Y") %>%
   mutate(mlb_made = ifelse(high_level == "MLB", 1, 0)) 
@@ -317,7 +317,7 @@ ggplot(college_signed_90_09, mapping = aes(draft_round, percent_mlb)) +
 ```
 
 
-```{r, include=FALSE}
+```{r hs_unsigned, include=FALSE}
 
 # I made a new dataset where I filtered the master set for only unsigned
 # highschool picks. I only selected the player_id column. I wanted to do this so
@@ -348,7 +348,7 @@ average initial round of top 20 high school picks to turn down the draft was
 12.99. When they are redrafted, the average pick is round 16.38, a fair drop.
 
 
-```{r, include=FALSE}
+```{r redraft_function, include=FALSE}
 
 redraft_master <- function(startyear, endyear = startyear + 4) {
 # filtering the unsigned high school data for only draft picks after 1990
@@ -563,7 +563,7 @@ post_mean_round(1990, 2015, 20)
 ```
 
 
-```{r, include=FALSE}
+```{r redraft_table, include=FALSE}
 
 # I made the master redraft_table in this chunk. Started by making a half-decade
 # list from 1990 through 20010 which each serve to hold the data for that draft
@@ -729,7 +729,7 @@ redraft_table <- rbind(redraft_table_50,
 
 
 
-```{r, echo=FALSE}
+```{r redraft_prob, echo=FALSE}
 
 # ggplot of redraft probability by set of rounds drafted in out of high school
 # and 5 year period in which a player was drafted out of high school.
@@ -752,13 +752,9 @@ redraft_table %>%
 ```
 Notes on graph: most recent 5 years emulates earliest two 5 year periods but much less steep towards back end of draft. Possible explanations are teams taking late draft shots at unsignable top picks or high school picks just maintaining stock better.
 
-```{r, include=FALSE}
-ggsave("final_project_shiny/redraft_probability.png")
-```
 
 
-
-```{r, echo=FALSE}
+```{r round_change, echo=FALSE}
 redraft_table %>%
   ggplot(aes(round, mean_round_diff)) +
   geom_point(na.rm = TRUE) +
@@ -863,7 +859,7 @@ master_peak <- master %>%
 ```
 
 
-```{r, echo=FALSE}
+```{r career_peak, echo=FALSE}
 
 peak_level <- function(max_round, startyear, endyear, min_round = 1) {
   
@@ -908,7 +904,7 @@ peak_level(max_round = 20, startyear = 2010, endyear = 2010, min_round = 1)
 
 
 
-```{r, echo=FALSE}
+```{r debut_age, echo=FALSE}
 
 debut_age <- function(max_round, startyear, endyear, min_round = 1) {
   
@@ -943,7 +939,7 @@ debut_age(max_round = 40, startyear = 1990, endyear = 2011, min_round = 1)
 ```
 
 
-```{r, echo=FALSE}
+```{r career_length, echo=FALSE}
 
 # I created hs_mlb_length which takes all high school picks who reached majors
 # and have not been in the majors since 2017 latest to make it very likely their
@@ -984,7 +980,7 @@ career_length()
 ```
 
 
-```{r, echo=FALSE}
+```{r career_war, echo=FALSE}
 
 war_summary <- function(pos = c("C", "1B", "2B", "3B", "SS", "OF", "P")) {
 
@@ -1025,7 +1021,7 @@ war_summary <- function(pos = c("C", "1B", "2B", "3B", "SS", "OF", "P")) {
 war_summary()
 ```
 
-```{r, echo=FALSE}
+```{r US_map, echo=FALSE}
 
 # I filtered the master data for signed high school picks before 2012 to make it
 # likely they are either in the majors or not in an organization. I grouped by
@@ -1068,7 +1064,7 @@ plot_usmap(data = state_mlb %>%
 ```
 
 
-```{r, echo=FALSE}
+```{r state_summary, echo=FALSE}
 state_mlb %>%
   filter(big_state == 0) %>%
   ggplot(aes(full, drafted, color = percent_mlb)) +
@@ -1095,7 +1091,7 @@ master %>%
   select(year, draft_round, teamname, first_name, last_name, mlb_length)
 ```
 
-```{r, echo=FALSE}
+```{r signing_gap, echo=FALSE}
 
 # To create redraft_gap, I took the full data of unsigned high school players
 # and their subsequent draft selections. I grouped the data by player_id, and
