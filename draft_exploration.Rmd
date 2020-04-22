@@ -1105,7 +1105,8 @@ master %>%
 # years from their initial draft to when they signed. I filtered out a handful
 # of observations in which different players shared an ID and were drafted many
 # years apart. I then sliced one observation from each player and found the mean
-# of the new signing_gap column.
+# of the new signing_gap column. Slicing won't affect the calculation but makes
+# the data easier to look at.
 
 redraft_gap <- hs_unsigned %>%
   group_by(player_id) %>%
