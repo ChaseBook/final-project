@@ -1058,7 +1058,12 @@ plot_usmap(data = state_mlb %>%
              filter(drafted >= 50),
            values = "percent_mlb", color = "white") + 
   scale_fill_viridis_c() +
-  theme(legend.position = "right")
+  theme(legend.position = "right") +
+  labs(
+    title = "Probability of Signed High School Picks Reaching the Majors",
+    fill = "MLB Probability"
+  ) +
+  theme_void()
   
 ```
 
@@ -1090,5 +1095,36 @@ master %>%
   select(year, draft_round, teamname, first_name, last_name, mlb_length)
 ```
 
+```{r, echo=FALSE}
 
+# To create redraft_gap, I took the full data of unsigned high school players
+# and their subsequent draft selections. I grouped the data by player_id, and
+# filtered for only the initial pick and the pick which they eventually signed.
+# I also filtered for only players who ultimately made the Major Leagues. I made
+# sure there were only two rows per player and subtracted the difference in
+# years from their initial draft to when they signed. I filtered out a handful
+# of observations in which different players shared an ID and were drafted many
+# years apart. I then sliced one observation from each player and found the mean
+# of the new signing_gap column.
+
+redraft_gap <- hs_unsigned %>%
+  group_by(player_id) %>%
+  filter(draft_numb == 1 | signed == "Y") %>%
+  filter(high_level == "MLB") %>%
+  filter(n() == 2) %>%
+  mutate(year = ifelse(year == min(year), year * (-1), year)) %>%
+  mutate(signing_gap = sum(year)) %>%
+  filter(signing_gap >= -10 & signing_gap < 8) %>%
+  slice(1) %>%
+  ungroup()
+
+mean_signing_gap <- redraft_gap %>%
+  summarize(mean_signing_gap = round(mean(signing_gap), 2)) %>%
+  pull(mean_signing_gap)
+
+mean_signing_gap
+  
+  
+```
+The most common age unsigned high school players reach the majors is 24, compared to 22 for signed high school picks. Interestingly, of unsigned high school picks that ultimately reach the majors, the average wait 2.84 years before signing again. This suggests that of high school picks that reach the majors, ones that go to college spend less time in the minor leagues. Although they still make their debut at a later age than their peers that sign, college baseball can provide them with experience to rise through the minor leagues more efficiently.
 

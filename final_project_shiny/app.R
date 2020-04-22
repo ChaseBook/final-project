@@ -5,6 +5,7 @@ library(shinythemes)
 library(tidyverse)
 library(gt)
 
+# NOTE: All work and comments can be fouund in draft_exploration.Rmd
 
 master <- read_csv("csv/master_final.csv")
 redraft_table <- read_csv("csv/redraft_table.csv")
@@ -95,27 +96,44 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                            
                            tabPanel("Navigating the Minors", align = "center",
                                     
-                                    titlePanel("Path to the Show"),
-                                    
-                                    br(),
-                                    br(),
-                                    
-                                    sidebarLayout(
-                                      sidebarPanel(
-                                        
-                                        numericInput("peakroundMin", "Minimum Round:", value = 1, min = 1, max = 40),
-                                        numericInput("peakroundMax", "Maximum Round:", value = 20, min = 1, max = 40),
-                                        numericInput("peakyearMin", "Minimum Year:", value = 1990, min = 1965, max = 2010),
-                                        numericInput("peakyearMax", "Maximum Year:", value = 2010, min = 1965, max = 2010)
-                                      ),
+                                    tabsetPanel(
                                       
-                                      mainPanel(
-                                        plotOutput("careerPeak")
+                                      tabPanel("Career Peak",
+                                    
+                                        titlePanel("Path to the Show"),
+                                    
+                                          br(),
+                                          br(),
+                                          
+                                          sidebarLayout(
+                                            sidebarPanel(
+                                              
+                                              numericInput("peakroundMin", "Minimum Round:", value = 1, min = 1, max = 40),
+                                              numericInput("peakroundMax", "Maximum Round:", value = 20, min = 1, max = 40),
+                                              numericInput("peakyearMin", "Minimum Year:", value = 1990, min = 1965, max = 2010),
+                                              numericInput("peakyearMax", "Maximum Year:", value = 2010, min = 1965, max = 2010)
+                                            ),
+                                            
+                                            mainPanel(
+                                              plotOutput("careerPeak")
+                                            )
+                                          )
+                                      ),
+                                    
+                                      tabPanel("Age of MLB Debut Season",
+                                        
+                                        titlePanel("When do High School Prospect that Reach the Majors Debut?"),
+                                        
+                                        br(),
+                                        br(),
+                                        
+                                        plotOutput("debutAge")
+                                        
+                                        
                                       )
                                     )
                            
                            ),
-                                    
                                     
                                     
 
@@ -187,7 +205,11 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                                
                                       )
                                     )
-                           )
+                           ),
+ 
+ # State by State Tab --------------------
+ 
+                            tabPanel("State by State", align = "center")
                            
                                        
                                        
@@ -370,6 +392,31 @@ server <- function(input, output) {
         subtitle = "Grouped by whether or not the player signed out of high school"
       )
     
+  })
+  
+  output$debutAge <- renderPlot({
+    debut <- master %>%
+      filter(source == "H" & draft_numb == 1 & high_level == "MLB") %>%
+      group_by(signed, debut) %>%
+      summarize(n = n()) %>%
+      group_by(signed) %>%
+      mutate(y = n/sum(n))
+    
+    debut %>%
+      ggplot(aes(x = debut, y = y, color = signed)) +
+      geom_point() +
+      geom_line() +
+      scale_y_continuous(labels = scales::percent_format()) +
+      scale_x_continuous(breaks = c(18:30)) +
+      theme_light() +
+      theme(text = element_text(size=20)) +
+      labs(
+        x = "Age During Debut Season",
+        y = "Percentage",
+        color = "Signed?",
+        title = "Distribution of Debut Season Age of High School Picks",
+        subtitle = "Grouped by whether or not the player signed out of high school"
+      )
   })
   
 # career length subset and graph
