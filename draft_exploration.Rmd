@@ -754,7 +754,7 @@ Notes on graph: most recent 5 years emulates earliest two 5 year periods but muc
 
 
 
-```{r round_change, echo=FALSE}
+```{r round_change, echo=FALSE} 
 redraft_table %>%
   ggplot(aes(round, mean_round_diff)) +
   geom_point(na.rm = TRUE) +
