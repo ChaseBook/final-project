@@ -1123,5 +1123,21 @@ mean_signing_gap
   
   
 ```
-The most common age unsigned high school players reach the majors is 24, compared to 22 for signed high school picks. Interestingly, of unsigned high school picks that ultimately reach the majors, the average wait 2.84 years before signing again. This suggests that of high school picks that reach the majors, ones that go to college spend less time in the minor leagues. Although they still make their debut at a later age than their peers that sign, college baseball can provide them with experience to rise through the minor leagues more efficiently.
+The most common age unsigned high school players reach the majors is 24, compared to 22 for signed high school picks. The mean age unsigned high school players reach the MLB is 24.19, compared to 22.65 for signed high school picks. Interestingly, of unsigned high school picks that ultimately reach the majors, the average player waits 2.84 years before signing again. This suggests that of high school picks that reach the majors, ones that go to college spend less time in the minor leagues. The average difference in debut age is approximately 1.54 years, meaning that on average, redrafted high schoolers spend 1.3 fewer years in the minor leagues. Although they still make their debut at a later age than their peers that sign, college baseball may provide players with experience to rise through the minor leagues more efficiently.
+
+```{r}
+master %>%
+  filter(source == "H" & signed == "Y" & high_level == "MLB") %>%
+  group_by(player_id) %>%
+  slice(1) %>%
+  ungroup() %>%
+  summarize(debut_age = mean(debut))
+
+master %>%
+  filter(source == "H" & signed == "N" & high_level == "MLB") %>%
+  group_by(player_id) %>%
+  slice(1) %>%
+  ungroup() %>%
+  summarize(debut_age = mean(debut))
+```
 
