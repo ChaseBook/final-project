@@ -753,7 +753,7 @@ redraft_table %>%
 Notes on graph: most recent 5 years emulates earliest two 5 year periods but much less steep towards back end of draft. Possible explanations are teams taking late draft shots at unsignable top picks or high school picks just maintaining stock better.
 
 
-
+ 
 ```{r round_change, echo=FALSE}  
 redraft_table %>%
   ggplot(aes(round, mean_round_diff)) +
