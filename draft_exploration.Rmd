@@ -1060,7 +1060,7 @@ plot_usmap(data = state_mlb %>%
     fill = "MLB Probability"
   ) +
   theme_void()
-  
+
 ```
 
 
@@ -1078,9 +1078,10 @@ state_mlb %>%
     x = "State",
     y = "Number of Players Drafted",
     title = "Number of High School Players Drafted by State",
-    subtitle = "From 1965-2012 - Outliers: (California: 2249, Texas: 627, Florida: 1069)",
-    color = "MLB Percent"
+    subtitle = "From 1965-2012 - Outliers: (California: 2249, Florida: 1069, Texas: 627)",
+    color = "MLB Probability"
   )
+
 ```
 
 ```{r, include=FALSE}

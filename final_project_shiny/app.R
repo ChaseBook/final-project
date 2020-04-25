@@ -122,7 +122,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                     
                                       tabPanel("Age of MLB Debut Season",
                                         
-                                        titlePanel("When do High School Prospect that Reach the Majors Debut?"),
+                                        titlePanel("Do Re-drafted Players Reach the Majors Faster?"),
                                         
                                         br(),
                                         br(),
@@ -209,7 +209,38 @@ ui <- fluidPage(theme = shinytheme("flatly"),
  
  # State by State Tab --------------------
  
-                            tabPanel("State by State", align = "center")
+                            tabPanel("State by State", align = "center",
+                                     
+                                     tabsetPanel(
+                                       
+                                       tabPanel("US Map of Draft Picks",
+                                                
+                                
+                                      
+                                                titlePanel("Which States Produce the Most Productive High School Draft Picks?"),
+                                     
+                                                 br(),
+                                                 br(),
+                                                 
+                                                 tags$img(src = "us_draft_map.png", width = "1000px", height = "617px")
+                                                     
+                                        ),
+                                       
+                                       tabPanel("State Production of Draft Picks",
+                                                
+                                                titlePanel("Which States Have Had the Most High School Players Go Professional?"),
+                                                
+                                                br(),
+                                                br(),
+                                                
+                                                tags$img(src = "draft_picks_state.png", width = "1000px", height = "617px")
+                                       )
+                                     )
+                            )
+                                                
+                                                
+                                     
+                            
                            
                                        
                                        
