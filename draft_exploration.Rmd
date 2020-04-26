@@ -773,6 +773,18 @@ redraft_table %>%
   geom_hline(color = "red", linetype = "dashed", yintercept = 0)
 ```
 
+Another important factor to consider when turning down the draft is how a
+prospect's draft stock may change in the future. Earlier picks generally receive
+larger signing bonuses, so a drop of several rounds can cost a player hundreds
+of thousands of dollars in bonus money.
+
+This graph shows the average change in draft rounds for unsigned high school picks that are redrafted.
+Points above the red line indicate an improved draft stock, while those below represent a drop in draft round.
+Isolating each time period, we see the curve is gradually crossing the y=0 line at earlier rounds.
+
+This means that on average, early round picks are seeing less of a drop, or more of an improvement
+in draft stock than in years past.
+
 
 Note estimated intercept with y=0 to see when on average it becomes beneficial
 to a player's redraft stock to not sign out of high school. Important to keep in
