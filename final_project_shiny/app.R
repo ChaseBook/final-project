@@ -127,8 +127,12 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                         br(),
                                         br(),
                                         
-                                        plotOutput("debutAge")
+                                        plotOutput("debutAge"),
                                         
+                                        br(),
+                                        br(),
+                                        
+                                        htmlOutput("debutText")
                                         
                                       )
                                     )
@@ -448,6 +452,24 @@ server <- function(input, output) {
         title = "Distribution of Debut Season Age of High School Picks",
         subtitle = "Grouped by whether or not the player signed out of high school"
       )
+  })
+  
+  output$debutText <- renderUI({
+    
+    p1 <- p("From this graph, we see the most common age unsigned high school players reach 
+      the majors is 24, compared to 22 for signed high school picks. The mean age unsigned
+      high school players debut in the MLB is 24.19, compared to 22.65 for signed high school picks. 
+      Interestingly, of unsigned high school picks that ultimately reach the majors, 
+      the average player waits 2.84 years before signing again.")
+    
+    p2 <- p("This suggests that of all high school picks that reach the majors, ones that go to 
+            college spend less time in the minor leagues. The average difference in debut age is 
+            approximately 1.54 years, meaning that on average, redrafted high schoolers spend 
+            1.3 fewer years in the minor leagues. Although they still make their debut at a later 
+            age than their peers that sign, college baseball may provide players with experience 
+            to rise through the minor leagues more efficiently.")
+    
+    HTML(paste(p1, br(), p2))
   })
   
 # career length subset and graph
