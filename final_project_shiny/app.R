@@ -86,7 +86,12 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                                  mainPanel(
                                                    plotOutput("redraftStock")
                                                  )
-                                               )
+                                               ),
+                                               
+                                               br(),
+                                               br(),
+                                               
+                                               htmlOutput("roundchangeText")
                                         
                                       )
                                     )
@@ -307,8 +312,8 @@ server <- function(input, output) {
       
     redraft_subset() %>%
       ggplot(aes(round, percent_redrafted)) +
-      geom_point(na.rm = TRUE) +
-      geom_line(aes(group = start_year, color = start_year), na.rm = TRUE) +
+      geom_point(size = 1.5, na.rm = TRUE) +
+      geom_line(aes(group = start_year, color = start_year), size = 1, na.rm = TRUE) +
       labs(
         x = "Round Range Drafted out of High School",
         y = "Percent of Picks Re-drafted",
@@ -327,8 +332,8 @@ server <- function(input, output) {
     ex_1 <- p("One factor high school draftees should consider when deciding 
               whether to sign is whether they will get another chance to 
               play professional baseball. For most prospects, turning down pro 
-              ball for a four-year college means they will not be draft 
-              eligible until after their junior year. In this time, they run
+              ball for a four-year college means they will not be draft-eligible 
+              until after their junior year. In this time, they run
               the risk of injury, lack of production in college, and other
               factors that may prevent them from being drafted again.")
     
@@ -343,7 +348,7 @@ server <- function(input, output) {
              period starting in 2010 closely resembles the 1990 and 1995
              data for picks within the top 20 rounds. However, from the 20th
              round onward, the slope of the 2010 redraft probability curve is
-             less steep than any other time period. Late-round high school
+             flatter than any other time period. Late-round high school
              picks in the 2010 period have the highest chance of being redrafted
              relative to earlier periods. There are various possible explanations
              for this trend, one being that teams are simply better at identifying
@@ -351,7 +356,7 @@ server <- function(input, output) {
              technologies. This would increase the likelihood these players continue
              to succeed in college and get redrafted. Another possibility is teams
              may be using more late-round picks on top high school prospects who
-             are clearly going to college, whether not they truly mean to sign
+             are clearly going to college, whether or not they truly mean to sign
              them. These would be the elite high school players that get drafted
              in the 35th round, turn down the draft, and are clearly going to
              be redrafted later on.")
@@ -368,8 +373,8 @@ server <- function(input, output) {
       
     stock_subset() %>%
       ggplot(aes(round, mean_round_diff)) +
-      geom_point(na.rm = TRUE) +
-      geom_line(aes(group = start_year, color = start_year), na.rm = TRUE) +
+      geom_point(size = 1.5, na.rm = TRUE) +
+      geom_line(aes(group = start_year, color = start_year), size = 1, na.rm = TRUE) +
       labs(
         x = "Round Range Drafted out of High School",
         y = "Average Improvement in Re-draft Round",
@@ -384,6 +389,36 @@ server <- function(input, output) {
       scale_y_continuous(breaks = c(-10, -5, 0, 10, 20)) +
       geom_hline(color = "red", linetype = "dashed", yintercept = 0)
     })
+  
+  
+  output$roundchangeText <- renderUI({
+    
+    ex1 <- p("Another important factor to consider when turning down the draft is how a
+              prospect's future draft stock may change. Earlier picks generally receive larger
+              signing bonuses, so a drop of several rounds can cost a player hundreds of
+              thousands of dollars of signing bonus money.")
+    
+    ex2 <- p("This graph shows the average change in draft rounds for unsigned high school
+             picks that are redrafted later on. Points above the red line indicate an
+             improved draft stock, while those below represent a drop. Viewing all five time
+             periods together, it is worth noting that the more recent periods are gradually
+             crossing the y=0 line at an earlier round.")
+             
+    ex3 <- p("The leftward shift of this intersection means that earlier-round unsigned picks
+             are seeing an improvement in draft stock where they would have been expected to
+             drop in periods past. Additionally, later round picks are seeing a larger
+             improvement in draft stock than in prior periods. The large jump in draft stock
+             for late-round picks must be considered while keeping in mind only about 60% of
+             30th to 40th round picks from 2010 to 2015 were redrafted at all. Considering this
+             graph alongside the re-draft probability graph, it is clear that the MLB draft has become
+             more forgiving to unsigned high school picks over time, as both the probability of being
+             redrafted is up and the change in draft stock for those selected again is more positive than
+             ever before.")
+    
+    HTML(paste(ex1, br(), ex2, br(), ex3))
+             
+    
+  })
   
 # Career peak distribution
   

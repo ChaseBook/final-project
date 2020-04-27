@@ -26,6 +26,7 @@ library(rvest)
 library(DataCombine)
 library(RColorBrewer)
 library(usmap)
+library(broom)
 ```
 
 
@@ -203,6 +204,16 @@ master <- master %>%
   left_join(war_positions, by = c("mlbid" = "mlb_ID")) %>%
   rename(position = POS)
 
+```
+
+```{r height_reformat, include=FALSE}
+
+# I reformatted the height string to inches numeric
+
+master <- master %>%
+  mutate(ht = sapply(strsplit(master$ht,"-"),
+        function(x){12*as.numeric(x[1]) + as.numeric(x[2])})) %>%
+  mutate(ht = as.numeric(ht))
 ```
 
 
@@ -774,16 +785,22 @@ redraft_table %>%
 ```
 
 Another important factor to consider when turning down the draft is how a
-prospect's draft stock may change in the future. Earlier picks generally receive
-larger signing bonuses, so a drop of several rounds can cost a player hundreds
-of thousands of dollars in bonus money.
+prospect's future draft stock may change. Earlier picks generally receive larger
+signing bonuses, so a drop of several rounds can cost a player hundreds of
+thousands of dollars of signing bonus money.
 
-This graph shows the average change in draft rounds for unsigned high school picks that are redrafted.
-Points above the red line indicate an improved draft stock, while those below represent a drop in draft round.
-Isolating each time period, we see the curve is gradually crossing the y=0 line at earlier rounds.
+This graph shows the average change in draft rounds for unsigned high school
+picks that are redrafted later on. Points above the red line indicate an
+improved draft stock, while those below represent a drop. Viewing all five time
+periods together, it is worth noting that the curves are gradually crossing the
+y=0 line at an earlier round.
 
-This means that on average, early round picks are seeing less of a drop, or more of an improvement
-in draft stock than in years past.
+The leftward shift of this intersection means that earlier-round unsigned picks
+are seeing an improvement in draft stock where they would have been expected to
+drop in periods past. Additionally, later round picks are seeing a larger
+improvement in draft stock than in prior periods. The large jump in draft stock
+for late-round picks must be considered while keeping in mind only about 60% of
+30th to 40th round picks from 2010 to 2015 were redrafted at all.
 
 
 Note estimated intercept with y=0 to see when on average it becomes beneficial
@@ -1152,5 +1169,17 @@ master %>%
   slice(1) %>%
   ungroup() %>%
   summarize(debut_age = mean(debut))
+```
+
+```{r}
+regression_master <- master %>%
+  filter(source == "H" & draft_numb == 1) %>%
+  filter(year <= 2012) %>%
+  mutate(mlb_made = ifelse(high_level == "MLB", 1, 0)) %>%
+  mutate(mlb_made = as.factor(mlb_made))
+
+model_mlb_made <- glm(mlb_made ~ signed, family = binomial, data = regression_master)  %>%
+  tidy(conf.int = TRUE)
+
 ```
 
