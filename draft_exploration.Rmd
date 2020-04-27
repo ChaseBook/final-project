@@ -1183,3 +1183,80 @@ model_mlb_made <- glm(mlb_made ~ signed, family = binomial, data = regression_ma
 
 ```
 
+
+```{r}
+
+hs_sign_by_round <- function(startyear, endyear = startyear + 4) {
+  
+
+by_round <- master %>%
+  filter(source == "H") %>%
+  filter(year >= startyear & year <= endyear) %>%
+  mutate(half_decade = as.factor(ifelse(year %in% 1990:1994, 1990,
+                                 ifelse(year %in% 1995:1999, 1995,
+                                        ifelse(year %in% 2000:2004, 2000,
+                                               ifelse(year %in% 2005:2009, 2005,
+                                                      ifelse(year %in% 2010:2014, 2010, 
+                                                             ifelse(year %in% 2015:2019, 2015, NA)))))))) %>%
+  mutate(signed_numeric = ifelse(signed == "Y", 1, 0)) %>%
+  group_by(draft_round, half_decade) %>%
+  summarize(percent_signed = sum(signed_numeric) / n(),
+            drafted = n(),
+            signed = sum(signed_numeric)) %>%
+  mutate(percent_signed = ifelse(half_decade == 2010 & draft_round > 40, NA, percent_signed))
+
+by_round %>%
+  ggplot(aes(draft_round, percent_signed)) +
+  geom_smooth(formula = y~x+x^2, aes(group = half_decade, color = half_decade), se = FALSE, size = 1) +
+  theme_light()
+
+}
+
+hs_sign_by_round(startyear = 1990, endyear = 2019)
+  
+
+```
+
+```{r}
+draft_2019 <- master %>%
+  filter(year == 2019) %>%
+  filter(signed == "N") %>%
+  arrange(draft_round)
+
+signed_by_year <- master %>%
+  mutate(signed_numeric = ifelse(signed == "Y", 1, 0)) %>%
+  group_by(year) %>%
+  summarize(percent_signed = sum(signed_numeric) / n(),
+            drafted = n(),
+            signed = sum(signed_numeric))
+
+signed_by_year %>%
+  ggplot(aes(year, percent_signed)) +
+  geom_point(color = "dodgerBlue4") +
+  geom_line(color = "dodgerBlue") +
+  theme_light() +
+  labs(
+    x = "Year",
+    y = "Percent of Picks Signed"
+  )
+
+signed_by_year_hs <- master %>%
+  filter(source == "H" & draft_round >= 20 & draft_round <= 40) %>%
+  mutate(signed_numeric = ifelse(signed == "Y", 1, 0)) %>%
+  group_by(year) %>%
+  summarize(percent_signed = sum(signed_numeric) / n(),
+            drafted = n(),
+            signed = sum(signed_numeric))
+  
+signed_by_year_hs %>%
+  ggplot(aes(year, percent_signed)) +
+  geom_point(color = "dodgerBlue4") +
+  geom_line(color = "dodgerBlue") +
+  theme_light() +
+  labs(
+    x = "Year",
+    y = "Percent of Picks Signed",
+    title = "Signability of High School Picks Over Time"
+  )
+```
+
