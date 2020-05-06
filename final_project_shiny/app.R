@@ -93,6 +93,36 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                                
                                                htmlOutput("roundchangeText")
                                         
+                                      ),
+                                      
+                                      tabPanel("Shortening The Draft",
+                                               
+                                               titlePanel("Regression Discontinuity: How Did Shortening the MLB Draft from 50 rounds to 40 rounds in 2012 Affect Signability?"),
+                                               
+                                               br(),
+                                               br(),
+                                               
+                                               sidebarLayout(
+                                                 sidebarPanel(
+                                                   
+                                                   numericInput("regroundMin", "Minimum Round:", value = 1, min = 1),
+                                                   numericInput("regroundMax", "Maximum Round:", value = 100, min = 1),
+                                                   checkboxGroupInput("hs_college",
+                                                                      "Source of Drafted Players:",
+                                                                      c("H", "C"), 
+                                                                      selected = c("H", "C")
+                                                   )
+                                                 ),
+                                                 mainPanel(
+                                                   plotOutput("roundsignGraph")
+                                                 )
+                                               ),
+                                               
+                                               br(),
+                                               br(),
+                                               
+                                               htmlOutput("roundsignabilityText")
+                                               
                                       )
                                     )
                            ), 
@@ -417,6 +447,55 @@ server <- function(input, output) {
     
     HTML(paste(ex1, br(), ex2, br(), ex3))
              
+    
+  })
+  
+# Signability by Round Regression Discontinuity Graph
+  
+  output$roundsignGraph <- renderPlot({
+    
+    signed_by_year <- master %>%
+      filter(draft_round >= input$regroundMin & draft_round <= input$regroundMax) %>%
+      filter(source %in% input$hs_college) %>%
+      mutate(signed_numeric = ifelse(signed == "Y", 1, 0)) %>%
+      group_by(year) %>%
+      summarize(percent_signed = sum(signed_numeric) / n(),
+                drafted = n(),
+                signed = sum(signed_numeric)) %>%
+      mutate(period = ifelse(year <= 2011, "Pre-2012", "2012-Onward"))
+    
+    signed_by_year %>%
+      ggplot(aes(year, percent_signed)) +
+      geom_point(aes(color = period)) +
+      geom_smooth(formula = y ~ x + x^2, aes(color = period)) +
+      theme_light() +
+      theme(text = element_text(size=20)) +
+      labs(
+        x = "Year",
+        y = "Percent of Picks Signed",
+        title = "Trends in Signability of Draft Picks",
+        subtitle = "Before and after the draft was shortened to 40 rounds in 2011",
+        color = "Period"
+      )
+  })
+  
+  output$roundsignabilityText <- renderUI({
+    
+    ex1 <- p("The Major League Baseball draft has taken on different lengths since its
+             inception in 1965. Most recently, the draft was cut from 50 rounds to 40 rounds
+             beginning in 2012. This graph shows the percentage of picks signed each year, using
+             regression discontinuity to visualize the effect of shortening the draft
+             on player signability.")
+    
+    ex2 <- p("With all rounds and both high school and college players selected, we can see
+             how the signability of picks has changed over time. There is a notable jump in the 
+             overall percentage of draft picks signed in 2011, breaking from the trajectory of previous
+             years. While some of this jump may be attributed to other adjustments made to the draft in the
+             2011 Collective Bargaining Agreement, a substantial portion likely stems from shortening the draft.")
+    
+    
+    HTML(paste(ex1, br(), ex2))
+    
     
   })
   

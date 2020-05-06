@@ -1228,26 +1228,40 @@ signed_by_year <- master %>%
   group_by(year) %>%
   summarize(percent_signed = sum(signed_numeric) / n(),
             drafted = n(),
-            signed = sum(signed_numeric))
+            signed = sum(signed_numeric)) %>%
+  mutate(period = ifelse(year <= 2011, "Pre-2012", "2012-Onward"))
 
 signed_by_year %>%
   ggplot(aes(year, percent_signed)) +
-  geom_point(color = "dodgerBlue4") +
-  geom_line(color = "dodgerBlue") +
+  geom_point(aes(color = period)) +
+  geom_smooth(formula = y ~ x + x^2, aes(color = period)) +
   theme_light() +
   labs(
     x = "Year",
-    y = "Percent of Picks Signed"
+    y = "Percent of Picks Signed",
+    title = "Trends in Signability of Draft Picks",
+    subtitle = "Before and after the draft was shortened to 40 rounds in 2011",
+    color = "Period"
   )
 
+
+
+  
+```
+
+```{r, echo=FALSE}
+
 signed_by_year_hs <- master %>%
-  filter(source == "H" & draft_round >= 20 & draft_round <= 40) %>%
+  filter(source == "H") %>%
   mutate(signed_numeric = ifelse(signed == "Y", 1, 0)) %>%
   group_by(year) %>%
   summarize(percent_signed = sum(signed_numeric) / n(),
             drafted = n(),
-            signed = sum(signed_numeric))
+            signed = sum(signed_numeric)) %>%
+  mutate(period = ifelse(year <= 2011, "Pre-2012", "2012-Onward"))
   
+
+
 signed_by_year_hs %>%
   ggplot(aes(year, percent_signed)) +
   geom_point(color = "dodgerBlue4") +
@@ -1258,5 +1272,57 @@ signed_by_year_hs %>%
     y = "Percent of Picks Signed",
     title = "Signability of High School Picks Over Time"
   )
+
+signed_by_year_hs %>%
+  ggplot(aes(year, percent_signed)) +
+  geom_point(aes(color = period)) +
+  geom_smooth(formula = y~x+x^2, se = FALSE, aes(color = period)) +
+  theme_light() +
+  labs(
+    x = "Year",
+    y = "Percent of Picks Signed",
+    title = "Trends in Signability of High School Picks",
+    subtitle = "Before and after the draft was shortened to 40 rounds in 2011"
+  )
 ```
+
+
+
+```{r, echo = FALSE}
+
+# making function for signability by round regression discontinuity with
+# variable rounds and player source.
+
+draft_signability <- function(min_round = 1, max_round = 100, player_source = c("H", "C")) {
+
+signed_by_year <- master %>%
+  filter(draft_round >= min_round & draft_round <= max_round) %>%
+  filter(source %in% player_source) %>%
+  mutate(signed_numeric = ifelse(signed == "Y", 1, 0)) %>%
+  group_by(year) %>%
+  summarize(percent_signed = sum(signed_numeric) / n(),
+            drafted = n(),
+            signed = sum(signed_numeric)) %>%
+  mutate(period = ifelse(year <= 2011, "Pre-2012", "2012-Onward"))
+
+signed_by_year %>%
+  ggplot(aes(year, percent_signed)) +
+  geom_point(aes(color = period)) +
+  geom_smooth(formula = y ~ x + x^2, aes(color = period)) +
+  theme_light() +
+  labs(
+    x = "Year",
+    y = "Percent of Picks Signed",
+    title = "Trends in Signability of Draft Picks",
+    subtitle = "Before and after the draft was shortened to 40 rounds in 2011",
+    color = "Period"
+  )
+
+}
+
+draft_signability(min_round = 1)
+```
+
+
+
 
