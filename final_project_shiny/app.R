@@ -287,8 +287,8 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                       
                                h3("About Me"),
                                p(
-                                 "My name is Chase Bookin and I am a sophomore at Harvard College pursuing a
-                                 degree in Economics with a secondary in Statistics. I also am a pitcher for the 
+                                 "My name is Chase Bookin. I am a sophomore at Harvard College pursuing a
+                                 degree in Economics with a secondary in Statistics, and I pitch for the 
                                  Harvard baseball team. I can be reached at",
                                  a("cbookin@college.harvard.edu", href = "mailto:cbookin@college.harvard.edu"),
                                  "."
