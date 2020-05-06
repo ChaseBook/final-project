@@ -281,14 +281,31 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                                 tags$img(src = "draft_picks_state.png", width = "1000px", height = "617px")
                                        )
                                      )
-                            )
-                                                
-                                                
-                                     
-                            
-                           
-                                       
-                                       
+                            ),
+ 
+                             tabPanel("About",
+                                      
+                               h3("About Me"),
+                               p(
+                                 "My name is Chase Bookin and I am a sophomore at Harvard College pursuing a
+                                 degree in Economics with a secondary in Statistics and am a pitcher for the 
+                                 Harvard baseball team. I can be reached at",
+                                 a("cbookin@college.harvard.edu", href = "mailto:cbookin@college.harvard.edu"),
+                                 "."
+                                 ),
+                                
+                               h3("Acknowledgements"),
+                               p(
+                                 "I greatly appreciate the guidance of David Kane and Kaneesha Johnson throughout this project."
+                               ),
+                               
+                               p(
+                                 "My GitHub can be found",
+                                 a("here", href = "https://github.com/ChaseBook"),
+                                 "."
+                               )
+                             )
+                               
 ))
 
 # Define server logic required to draw a histogram
