@@ -890,7 +890,7 @@ master_peak <- master %>%
 
 ```{r career_peak, echo=FALSE}
 
-peak_level <- function(max_round, startyear, endyear, min_round = 1) {
+peak_level <- function(max_round, startyear, endyear, min_round = 1, beyond_college = "") {
   
 top_20_hs <- master %>%
   filter(source == "H" & draft_numb == 1) %>%
@@ -898,6 +898,7 @@ top_20_hs <- master %>%
   mutate(high_level = ifelse(high_level %in% c("-", "JrCollege", "NAIA", "NCAA"),
                              "<=College",
                              high_level)) %>%
+  filter(high_level != beyond_college) %>%
   group_by(signed, high_level) %>%
   summarize(n = n()) %>%
   group_by(signed) %>%
@@ -927,7 +928,7 @@ top_20_hs %>%
 
 }
 
-peak_level(max_round = 20, startyear = 2010, endyear = 2010, min_round = 1)
+peak_level(max_round = 20, startyear = 1990, endyear = 2010, min_round = 1, beyond_college = "")
 ```
 
 
@@ -1323,6 +1324,25 @@ signed_by_year %>%
 draft_signability(min_round = 1)
 ```
 
+```{r}
+master %>%
+  filter(source == "H" & draft_numb == 1) %>%
+  mutate(high_level = ifelse(high_level %in% c("-", "JrCollege", "NAIA", "NCAA"),
+                             "<=College",
+                             high_level)) %>%
+  filter(signed == "Y" & high_level == "<=College" & year <= 2018) %>%
+  arrange(desc(year))
+```
 
+```{r}
+master %>%
+  filter(year %in% c(1990:2010) & draft_round %in% c(1:20)) %>%
+  filter(source == "H" & draft_numb == 1) %>%
+  mutate(high_level = ifelse(high_level %in% c("-", "JrCollege", "NAIA", "NCAA"),
+                             "<=College",
+                             high_level)) %>%
+  filter(signed == "N" & high_level != "<=College" & high_level != "Indy") %>%
+  summarize(percent_MLB = sum(high_level == "MLB") / n())
+```
 
 

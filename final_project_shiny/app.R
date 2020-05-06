@@ -143,16 +143,22 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                           sidebarLayout(
                                             sidebarPanel(
                                               
-                                              numericInput("peakroundMin", "Minimum Round:", value = 1, min = 1, max = 40),
-                                              numericInput("peakroundMax", "Maximum Round:", value = 20, min = 1, max = 40),
+                                              numericInput("peakroundMin", "Minimum Round:", value = 1, min = 1, max = 50),
+                                              numericInput("peakroundMax", "Maximum Round:", value = 20, min = 1, max = 50),
                                               numericInput("peakyearMin", "Minimum Year:", value = 1990, min = 1965, max = 2010),
-                                              numericInput("peakyearMax", "Maximum Year:", value = 2010, min = 1965, max = 2010)
+                                              numericInput("peakyearMax", "Maximum Year:", value = 2010, min = 1965, max = 2010),
+                                              radioButtons("beyondCollege",
+                                                           "Check <=College to filter out players that did not surpass college baseball",
+                                                           c("<=College", "All Players"),
+                                                           selected = "All Players")
                                             ),
                                             
                                             mainPanel(
                                               plotOutput("careerPeak")
                                             )
-                                          )
+                                          ),
+                                        
+                                        htmlOutput("careerpeakText")
                                       ),
                                     
                                       tabPanel("Age of MLB Debut Season",
@@ -489,7 +495,7 @@ server <- function(input, output) {
     
     ex2 <- p("With all rounds and both high school and college players selected, we can see
              how the signability of picks has changed over time. There is a notable jump in the 
-             overall percentage of draft picks signed in 2011, breaking from the trajectory of previous
+             overall percentage of draft picks signed in 2012, breaking from the trajectory of previous
              years. While some of this jump may be attributed to other adjustments made to the draft in the
              2011 Collective Bargaining Agreement, a substantial portion likely stems from shortening the draft.")
     
@@ -509,6 +515,7 @@ server <- function(input, output) {
       mutate(high_level = ifelse(high_level %in% c("-", "JrCollege", "NAIA", "NCAA"),
                                  "<=College",
                                  high_level)) %>%
+      filter(high_level != input$beyondCollege) %>%
       group_by(signed, high_level) %>%
       summarize(n = n()) %>%
       group_by(signed) %>%
@@ -543,6 +550,27 @@ server <- function(input, output) {
     
   })
   
+  output$careerpeakText <- renderUI({
+    
+    ex1 <- p("This graph shows the distribution of the peak level of baseball high school draft picks reach 
+              in their careers. The data is separated by whether the player signed out of high school. 
+              An observation worth noting is that as the round range moves towards the back end of the draft,
+              the percentage of signed high school picks who fail to advance beyond Rookie ball rises rapidly.")
+
+
+    
+    ex2 <- p("Looking at rounds 20-50 from 1990-2010, we see that while nearly half of unsigned picks
+              do not make it beyond college baseball, more than a third of those that sign see their 
+              careers end in rookie ball. Additionally, by checking the <=College box, we can see the
+              conditional probability unsigned picks make it to the Major Leagues given they make it
+              past college baseball.")
+    
+    
+    HTML(paste(ex1, br(), ex2))
+    
+    
+  })
+  
   output$debutAge <- renderPlot({
     debut <- master %>%
       filter(source == "H" & draft_numb == 1 & high_level == "MLB") %>%
@@ -571,10 +599,10 @@ server <- function(input, output) {
   output$debutText <- renderUI({
     
     p1 <- p("From this graph, we see the most common age unsigned high school players reach 
-      the majors is 24, compared to 22 for signed high school picks. The mean age unsigned
-      high school players debut in the MLB is 24.19, compared to 22.65 for signed high school picks. 
-      Interestingly, of unsigned high school picks that ultimately reach the majors, 
-      the average player waits 2.84 years before signing again.")
+            the majors is 24, compared to 22 for signed high school picks. The mean age unsigned
+            high school players debut in the MLB is 24.19, compared to 22.65 for signed high school picks. 
+            Interestingly, of unsigned high school picks that ultimately reach the majors, 
+            the average player waits 2.84 years before signing again.")
     
     p2 <- p("This suggests that of all high school picks that reach the majors, ones that go to 
             college spend less time in the minor leagues. The average difference in debut age is 
